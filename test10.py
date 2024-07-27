@@ -1,1 +1,1 @@
-print("soz-danie novego testovogo fila10")
+print("sozdanie novuyogo testovogo file 10 ")
