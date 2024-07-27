@@ -1,1 +1,0 @@
-print("sozdani novogo testovogo faila 12 ")

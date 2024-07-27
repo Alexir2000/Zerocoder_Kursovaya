@@ -1,1 +1,0 @@
-print("sozdaniye novoyo testovogo fila% 8")
