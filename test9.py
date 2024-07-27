@@ -1,1 +1,1 @@
-print("sozdanie novogo testovofila sart"</print>
+print("sozdanie novogo testovofila 9")
