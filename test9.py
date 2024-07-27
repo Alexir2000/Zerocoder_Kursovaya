@@ -1,0 +1,1 @@
+print("sozdanie novogo testovofila sart"</print>
