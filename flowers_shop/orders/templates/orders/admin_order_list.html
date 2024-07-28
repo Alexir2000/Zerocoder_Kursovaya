@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <title>Управление заказами</title>
+</head>
+<body>
+    <h2>Список заказов</h2>
+    <ul>
+        {% for order in orders %}
+            <li>Заказ №{{ order.ID }} - Пользователь: {{ order.ID_User.email }} - Товар: {{ order.ID_Tovar.Nazvanie }} - Количество: {{ order.Kolichestvo }} - Статус: {{ order.ID_Status.Status }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

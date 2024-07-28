@@ -1,0 +1,22 @@
+<!-- flowers_shop/orders/templates/orders/change_order_status.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Изменить статус заказа</title>
+</head>
+<body>
+    <h2>Изменить статус заказа №{{ order.ID }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="status">Статус:</label>
+        <select name="status" id="status">
+            {% for status in statuses %}
+                <option value="{{ status.ID }}" {% if status == order.ID_Status %}selected{% endif %}>{{ status.Status }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Сохранить</button>
+    </form>
+    <a href="{% url 'admin_order_list' %}">Вернуться к списку заказов</a>
+</body>
+</html>
