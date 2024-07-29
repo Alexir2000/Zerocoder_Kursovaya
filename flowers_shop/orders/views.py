@@ -4,11 +4,11 @@ from django.shortcuts import render
 # Create your views here.
 from django.shortcuts import render, redirect
 from .models import CartItem
-from flowers_shop.main.models import Tovar
+from ..main.models import Tovar
 from django.contrib.auth.decorators import login_required
 from .models import CartItem
 from .forms import OrderForm
-from flowers_shop.main.models import Zakaz
+from ..main.models import Zakaz
 from datetime import timezone
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import get_object_or_404

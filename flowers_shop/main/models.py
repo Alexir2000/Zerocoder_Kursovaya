@@ -1,17 +1,16 @@
-# flowers_shop/main/models.py
-
 from django.db import models
 from django.contrib.auth.models import User
 
-# Модель Статус Доступа
+# Статусы доступа пользователей
 class StatusDostupa(models.Model):
     ID = models.AutoField(primary_key=True)
     Status = models.CharField(max_length=255)
+    Opisanie_Dostupa = models.TextField()  # Новое поле для описания статуса доступа
 
     def __str__(self):
         return self.Status
 
-# Модель Пользователь
+# Пользователи системы
 class Users(models.Model):
     ID = models.AutoField(primary_key=True)
     StatusID = models.ForeignKey(StatusDostupa, on_delete=models.CASCADE)
@@ -20,11 +19,12 @@ class Users(models.Model):
     adres = models.TextField()
     Primechanie = models.TextField(null=True, blank=True)
     ID_vnutr = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
+    password = models.CharField(max_length=128, null=True, blank=True)  # Новое поле для пароля
 
     def __str__(self):
         return self.email
 
-# Модель Тип Товара
+# Типы товаров
 class Tip_Tovara(models.Model):
     ID = models.AutoField(primary_key=True)
     Tip = models.CharField(max_length=255)
@@ -32,7 +32,7 @@ class Tip_Tovara(models.Model):
     def __str__(self):
         return self.Tip
 
-# Модель Категория Товара
+# Категории товаров
 class Kat_Tovara(models.Model):
     ID = models.AutoField(primary_key=True)
     Kategoriya = models.CharField(max_length=255)
@@ -40,7 +40,7 @@ class Kat_Tovara(models.Model):
     def __str__(self):
         return self.Kategoriya
 
-# Модель Товар
+# Товары
 class Tovar(models.Model):
     ID = models.AutoField(primary_key=True)
     Nazvanie = models.CharField(max_length=255)
@@ -54,7 +54,7 @@ class Tovar(models.Model):
     def __str__(self):
         return self.Nazvanie
 
-# Модель Статус Заказа
+# Статусы заказов
 class StatusZakaza(models.Model):
     ID = models.AutoField(primary_key=True)
     Status = models.CharField(max_length=255)
@@ -62,7 +62,7 @@ class StatusZakaza(models.Model):
     def __str__(self):
         return self.Status
 
-# Модель Заказ
+# Заказы
 class Zakaz(models.Model):
     ID = models.AutoField(primary_key=True)
     ID_TipZakaza = models.CharField(max_length=255)
@@ -77,7 +77,7 @@ class Zakaz(models.Model):
     def __str__(self):
         return f'Order {self.ID} by {self.ID_User.email}'
 
-# Модель Отзыв
+# Отзывы
 class BaseOtziv(models.Model):
     ID = models.AutoField(primary_key=True)
     ID_User = models.ForeignKey(Users, on_delete=models.CASCADE)
@@ -86,9 +86,9 @@ class BaseOtziv(models.Model):
     ReitingTovara = models.PositiveIntegerField(choices=[(i, i) for i in range(1, 6)])
 
     def __str__(self):
-        return f'Otziv by {self.ID_User.email} for {self.ID_Tovar.Nazvanie}'
+        return f'Review by {self.ID_User.email} for {self.ID_Tovar.Nazvanie}'
 
-# Модель Отчет
+# Отчеты
 class Otchet(models.Model):
     ID = models.AutoField(primary_key=True)
     Data = models.DateField()
@@ -100,4 +100,3 @@ class Otchet(models.Model):
 
     def __str__(self):
         return f'Otchet for {self.Data} - Order {self.ID_Zakaz.ID}'
-
