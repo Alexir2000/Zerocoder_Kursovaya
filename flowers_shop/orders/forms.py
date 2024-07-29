@@ -1,5 +1,5 @@
 from django import forms
-from flowers_shop.main.models import Users
+from main.models import Users
 
 class OrderForm(forms.Form):
     user = forms.ModelChoiceField(queryset=Users.objects.all(), widget=forms.HiddenInput())

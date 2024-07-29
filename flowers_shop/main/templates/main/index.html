@@ -1,14 +1,10 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-</head>
-<body>
-<h1> Стартовая страница </h1>
+{% extends 'main/base.html' %}
 
-</body>
-</html>
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+    <h2>Добро пожаловать в наш цветочный магазин!</h2>
+    <p>Здесь вы можете заказать самые свежие и красивые цветы с доставкой на дом.</p>
+    <p>Пожалуйста, выберите категорию товаров в каталоге, чтобы начать покупки.</p>
+    <p>Не забудьте оставить отзыв о наших товарах и услугах!</p>
+{% endblock %}

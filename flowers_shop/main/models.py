@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 class StatusDostupa(models.Model):
     ID = models.AutoField(primary_key=True)
     Status = models.CharField(max_length=255)
-    Opisanie_Dostupa = models.TextField()  # Новое поле для описания статуса доступа
+    Opisanie_Dostupa = models.TextField(default="")  # Новое поле для описания статуса доступа
 
     def __str__(self):
         return self.Status

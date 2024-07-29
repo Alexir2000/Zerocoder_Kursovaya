@@ -1,5 +1,5 @@
 from django import forms
-from flowers_shop.main.models import BaseOtziv, Tovar
+from main.models import BaseOtziv, Tovar
 
 class ReviewForm(forms.ModelForm):
     class Meta:

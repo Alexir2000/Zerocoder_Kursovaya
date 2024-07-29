@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from flowers_shop.main.models import Otchet
+from main.models import Otchet
 
 def analytics_view(request):
     reports = Otchet.objects.all()

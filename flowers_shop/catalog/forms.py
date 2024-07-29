@@ -1,6 +1,9 @@
-# flowers_shop/catalog/forms.py
+
 
 from django import forms
+
+from main.models import Tip_Tovara, Kat_Tovara
+
 
 class TovarSearchForm(forms.Form):
     query = forms.CharField(label='Поиск', max_length=255, required=False)
