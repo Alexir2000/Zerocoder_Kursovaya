@@ -1,3 +1,6 @@
 from django.shortcuts import render
+from flowers_shop.main.models import Otchet
 
-# Create your views here.
+def analytics_view(request):
+    reports = Otchet.objects.all()
+    return render(request, 'analytics/analytics.html', {'reports': reports})
