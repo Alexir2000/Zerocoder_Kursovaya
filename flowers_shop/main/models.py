@@ -19,7 +19,10 @@ class Users(models.Model):
     adres = models.TextField()
     Primechanie = models.TextField(null=True, blank=True)
     ID_vnutr = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
-    password = models.CharField(max_length=128, null=True, blank=True)  # Новое поле для пароля
+    password = models.CharField(max_length=128, null=True, blank=True)
+    Chat_ID = models.CharField(max_length=255, null=True, blank=True, default=None)
+    Name = models.CharField(max_length=255, null=True, blank=True, default=None)
+    Family = models.CharField(max_length=255, null=True, blank=True, default=None)
 
     def __str__(self):
         return self.email
