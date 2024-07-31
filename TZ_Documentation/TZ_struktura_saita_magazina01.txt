@@ -83,3 +83,7 @@ reviews
 
 analytics
     analytics_view - Представление для просмотра аналитических данных и отчетов.
+
+superuser
+login Alex
+password 123
