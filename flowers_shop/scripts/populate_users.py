@@ -1,5 +1,7 @@
 import django
 from django.contrib.auth.hashers import make_password
+import os
+import sys
 
 # Убедитесь, что путь к корневой папке проекта добавлен в sys.path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))

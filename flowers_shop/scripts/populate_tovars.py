@@ -1,11 +1,14 @@
 import os
 import django
+import sys
 
+# Убедитесь, что путь к корневой папке проекта добавлен в sys.path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 # Настройки Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flowers_shop.settings')
 django.setup()
 
-from flowers_shop.main.models import Tovar, Tip_Tovara, Kat_Tovara
+from main.models import Tovar, Tip_Tovara, Kat_Tovara
 
 
 def populate_tovars():

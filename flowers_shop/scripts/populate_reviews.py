@@ -1,6 +1,10 @@
 import os
 import django
 import random
+import sys
+
+# Убедитесь, что путь к корневой папке проекта добавлен в sys.path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Настройки Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flowers_shop.settings')
