@@ -1,9 +1,7 @@
 # flowers_shop/catalog/views.py
 
 from django.shortcuts import render
-from .models import Tovar
-from django.shortcuts import render
-from .models import Tovar, Kat_Tovara, Tip_Tovara
+from main.models import Tovar, Kat_Tovara, Tip_Tovara
 from .forms import TovarSearchForm
 
 def catalog_view(request):
@@ -18,7 +16,7 @@ def catalog_view(request):
         if query:
             tovars = tovars.filter(Nazvanie__icontains=query)
         if category:
-            tovars = tovars.filter(ID_KetegorTovara=category)
+            tovars = tovars.filter(ID_KategorTovara=category)
         if type:
             tovars = tovars.filter(ID_TipTovara=type)
 

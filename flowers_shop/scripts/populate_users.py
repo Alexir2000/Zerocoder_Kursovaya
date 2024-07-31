@@ -13,8 +13,9 @@ django.setup()
 from main.models import Users, StatusDostupa
 
 def populate_users():
-    status_admin = StatusDostupa.objects.create(Status='Администратор', Opisanie_Dostupa='Полный доступ')
-    status_user = StatusDostupa.objects.create(Status='Пользователь', Opisanie_Dostupa='Ограниченный доступ')
+    status_admin = StatusDostupa.objects.create(Status='admin', Opisanie_Dostupa='Полный доступ')
+    status_user = StatusDostupa.objects.create(Status='user', Opisanie_Dostupa='Обычный доступ')
+    status_manager = StatusDostupa.objects.create(Status='manager', Opisanie_Dostupa='Доступ к статистике')
 
     Users.objects.create(
         email='admin@admin.ru',

@@ -6,11 +6,25 @@
     <h2>Каталог товаров</h2>
     <form method="get">
         {{ form.as_p }}
-        <button type="submit">Поиск</button>
+        <button type="submit">Найти</button>
     </form>
-    <ul>
-        {% for tovar in tovars %}
-            <li>{{ tovar.Nazvanie }} - {{ tovar.Cena }} руб.</li>
-        {% endfor %}
-    </ul>
+    <div class="tovars">
+        {% if tovars %}
+            {% for tovar in tovars %}
+                <div class="tovar-card">
+                    <h3>{{ tovar.Nazvanie }}</h3>
+                    <p>Цена: {{ tovar.Cena }} руб.</p>
+                    {% if tovar.Img_url %}
+                        <img src="{{ tovar.Img_url }}" alt="{{ tovar.Nazvanie }}">
+                    {% else %}
+                        <img src="path/to/default-image.jpg" alt="Нет изображения">
+                    {% endif %}
+                    <p>{{ tovar.Opisanie }}</p>
+                    <p>Рейтинг: {{ tovar.Reiting }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Товары не найдены.</p>
+        {% endif %}
+    </div>
 {% endblock %}

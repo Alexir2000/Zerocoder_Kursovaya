@@ -6,9 +6,9 @@ from main.models import Tip_Tovara, Kat_Tovara
 
 
 class TovarSearchForm(forms.Form):
-    query = forms.CharField(label='Поиск', max_length=255, required=False)
-    category = forms.ChoiceField(label='Категория', required=False)
-    type = forms.ChoiceField(label='Тип', required=False)
+    query = forms.CharField(required=False, label='Поиск')
+    category = forms.ModelChoiceField(queryset=Kat_Tovara.objects.all(), required=False, label='Категория')
+    type = forms.ModelChoiceField(queryset=Tip_Tovara.objects.all(), required=False, label='Тип товара')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

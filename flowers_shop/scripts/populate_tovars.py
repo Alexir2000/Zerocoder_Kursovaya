@@ -1,36 +1,50 @@
 import os
 import django
 import sys
+import random
 
-# Убедитесь, что путь к корневой папке проекта добавлен в sys.path
+# Установка пути к проекту и настройка Django
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-# Настройки Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flowers_shop.settings')
 django.setup()
 
 from main.models import Tovar, Tip_Tovara, Kat_Tovara
 
+def generate_random_description():
+    words = [
+        "Цветок", "красивый", "яркий", "весенний", "летний", "осенний", "зимний", "ароматный", "свежий", "прекрасный",
+        "нежный", "изящный", "благородный", "неповторимый", "волшебный", "особенный", "необычный", "уникальный"
+    ]
+    return ' '.join(random.sample(words, random.randint(7, 10)))
 
 def populate_tovars():
-    # Создание типов и категорий товаров
+    # Создание типа товаров
     tip1 = Tip_Tovara.objects.create(Tip='Цветы')
-    tip2 = Tip_Tovara.objects.create(Tip='Букеты')
+    tip2 = Tip_Tovara.objects.create(Tip='Аксессуары')
 
-    kat1 = Kat_Tovara.objects.create(Kategoriya='Розы')
-    kat2 = Kat_Tovara.objects.create(Kategoriya='Тюльпаны')
-    kat3 = Kat_Tovara.objects.create(Kategoriya='Лилии')
+    # Создание категорий товаров
+    kat1 = Kat_Tovara.objects.create(Kategoriya='Свежие цветы')
+    kat2 = Kat_Tovara.objects.create(Kategoriya='Букеты')
+    kat3 = Kat_Tovara.objects.create(Kategoriya='Цветы в горшках')
+
+    # Списки данных для товаров
+    categories = [kat1, kat2, kat3]
+    names = [
+        'Красная роза', 'Желтый тюльпан', 'Белая лилия', 'Розовая гвоздика', 'Фиолетовая орхидея',
+        'Белая хризантема', 'Синий ирис', 'Розовый пион', 'Лаванда', 'Нарцисс'
+    ]
+    prices = [100.00, 70.00, 120.00, 80.00, 200.00, 90.00, 110.00, 150.00, 60.00, 50.00]
 
     # Создание товаров
-    Tovar.objects.create(Nazvanie='Роза красная', Cena=100.00, Image='products/roza_krasnaya.jpg', Reiting=4.5,
-                         Opisanie='Красная роза', ID_TipTovara=tip1, ID_KetegorTovara=kat1)
-    Tovar.objects.create(Nazvanie='Тюльпан желтый', Cena=70.00, Image='products/tyulpan_zheltyj.jpg', Reiting=4.0,
-                         Opisanie='Желтый тюльпан', ID_TipTovara=tip1, ID_KetegorTovara=kat2)
-    Tovar.objects.create(Nazvanie='Лилия белая', Cena=120.00, Image='products/liliya_belaya.jpg', Reiting=4.7,
-                         Opisanie='Белая лилия', ID_TipTovara=tip1, ID_KetegorTovara=kat3)
-    Tovar.objects.create(Nazvanie='Букет роз', Cena=1500.00, Image='products/buket_roz.jpg', Reiting=4.8,
-                         Opisanie='Букет красных роз', ID_TipTovara=tip2, ID_KetegorTovara=kat1)
-
+    for i in range(10):
+        Tovar.objects.create(
+            Nazvanie=names[i],
+            Cena=prices[i],
+            Opisanie=generate_random_description(),
+            ID_TipTovara=tip1,
+            ID_KategorTovara=categories[i % len(categories)]
+        )
 
 if __name__ == '__main__':
     populate_tovars()
-    print('Тестовые товары успешно добавлены.')
+    print('Товары успешно добавлены.')
