@@ -24,7 +24,7 @@ def catalog_view(request):
     return render(request, 'catalog/catalog.html', {'tovars': tovars, 'form': form})
 
 def add_to_cart(request, tovar_id):
-    tovar = Tovar.objects.get(id=tovar_id)
+    tovar = Tovar.objects.get(ID=tovar_id)  # Используем ID для идентификатора
     quantity = int(request.POST.get('quantity', 1))
     cart_item, created = CartItem.objects.get_or_create(tovar=tovar)
     if not created:

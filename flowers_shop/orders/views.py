@@ -5,7 +5,7 @@ from .forms import OrderForm
 from datetime import timezone
 
 def add_to_cart(request, tovar_id):
-    tovar = Tovar.objects.get(id=tovar_id)
+    tovar = Tovar.objects.get(id=tovar_)
     cart_item, created = CartItem.objects.get_or_create(tovar=tovar)
     if not created:
         cart_item.quantity += 1
