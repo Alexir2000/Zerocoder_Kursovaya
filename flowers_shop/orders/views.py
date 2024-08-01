@@ -1,18 +1,20 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import CartItem
 from main.models import Tovar
 from .forms import OrderForm
 from datetime import timezone
 
 def add_to_cart(request, tovar_id):
-    tovar = Tovar.objects.get(ID=tovar_id)
-    cart_item, created = CartItem.objects.get_or_create(tovar=tovar)
-    if not created:
-        cart_item.quantity += 1
-    else:
-        cart_item.quantity = 1
-    cart_item.save()
-    return redirect('cart_detail')
+    if request.method == "POST":
+        tovar = get_object_or_404(Tovar, ID=tovar_id)
+        quantity = int(request.POST.get('quantity', 1))
+        cart_item, created = CartItem.objects.get_or_create(tovar=tovar)
+        if not created:
+            cart_item.quantity += quantity
+        else:
+            cart_item.quantity = quantity
+        cart_item.save()
+    return redirect('catalog')
 
 def cart_detail(request):
     cart_items = CartItem.objects.all()
