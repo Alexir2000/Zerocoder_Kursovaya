@@ -1,26 +1,39 @@
 {% extends 'main/base.html' %}
+{% load widget_tweaks %}
 
 {% block title %}Каталог товаров{% endblock %}
 
 {% block content %}
-    <h2>Каталог товаров</h2>
-    <form method="get">
-        {{ form.as_p }}
-        <button type="submit">Найти</button>
+    <h2 class="mt-4">Каталог товаров</h2>
+    <form method="get" class="form-inline mb-4">
+        <div class="form-group mx-sm-3 mb-2">
+            {{ form.query|add_class:"form-control" }}
+        </div>
+        <div class="form-group mx-sm-3 mb-2">
+            {{ form.category|add_class:"form-control" }}
+        </div>
+        <div class="form-group mx-sm-3 mb-2">
+            {{ form.type|add_class:"form-control" }}
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Найти</button>
     </form>
-    <div class="tovars">
+    <div class="row">
         {% if tovars %}
             {% for tovar in tovars %}
-                <div class="tovar-card">
-                    <h3>{{ tovar.Nazvanie }}</h3>
-                    <p>Цена: {{ tovar.Cena }} руб.</p>
-                    {% if tovar.Img_url %}
-                        <img src="{{ tovar.Img_url }}" alt="{{ tovar.Nazvanie }}">
-                    {% else %}
-                        <img src="path/to/default-image.jpg" alt="Нет изображения">
-                    {% endif %}
-                    <p>{{ tovar.Opisanie }}</p>
-                    <p>Рейтинг: {{ tovar.Reiting }}</p>
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                        {% if tovar.Img_url %}
+                            <img src="{{ tovar.Img_url }}" class="card-img-top" alt="{{ tovar.Nazvanie }}">
+                        {% else %}
+                            <img src="path/to/default-image.jpg" class="card-img-top" alt="Нет изображения">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ tovar.Nazvanie }}</h5>
+                            <p class="card-text">{{ tovar.Opisanie }}</p>
+                            <p class="card-text"><strong>Цена: {{ tovar.Cena }} руб.</strong></p>
+                            <p class="card-text">Рейтинг: {{ tovar.Reiting }}</p>
+                        </div>
+                    </div>
                 </div>
             {% endfor %}
         {% else %}

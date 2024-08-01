@@ -2,32 +2,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{% block title %}Цветочный магазин{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}Flower Shop{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <h1>Добро пожаловать в цветочный магазин</h1>
-        <nav>
-            <ul>
-                <li><a href="{% url 'index' %}">Главная</a></li>
-                <li><a href="{% url 'catalog' %}">Каталог товаров</a></li>
-                <li><a href="{% url 'cart_detail' %}">Корзина</a></li>
-                <li><a href="{% url 'admin_order_list' %}">Заказы</a></li>
-                <li><a href="{% url 'reviews_list' %}">Отзывы</a></li>  <!-- Обновленная ссылка -->
-                <li><a href="{% url 'analytics' %}">Аналитика</a></li>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'index' %}">Flower Shop</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'index' %}">Главная</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'catalog' %}">Каталог</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'cart_detail' %}">Корзина</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_order_list' %}">Заказы</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'reviews_list' %}">Отзывы</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'analytics' %}">Аналитика</a>
+                </li>
             </ul>
-        </nav>
-    </header>
+        </div>
+    </nav>
 
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">
+                                Навигация
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                Поиск
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                Фильтры
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
 
-    <footer>
-        <p>Все права защищены © 2023</p>
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container">
+            <span class="text-muted">© 2024 Flower Shop</span>
+        </div>
     </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
