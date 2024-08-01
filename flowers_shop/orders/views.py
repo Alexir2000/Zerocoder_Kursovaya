@@ -5,10 +5,12 @@ from .forms import OrderForm
 from datetime import timezone
 
 def add_to_cart(request, tovar_id):
-    tovar = Tovar.objects.get(ID=tovar_id)  # Используем ID для идентификатора
+    tovar = Tovar.objects.get(ID=tovar_id)
     cart_item, created = CartItem.objects.get_or_create(tovar=tovar)
     if not created:
         cart_item.quantity += 1
+    else:
+        cart_item.quantity = 1
     cart_item.save()
     return redirect('cart_detail')
 
@@ -33,3 +35,8 @@ def checkout(request):
 
 def order_success(request):
     return render(request, 'orders/order_success.html')
+
+def clear_cart(request):
+    if request.method == 'POST':
+        CartItem.objects.all().delete()
+    return redirect('cart_detail')

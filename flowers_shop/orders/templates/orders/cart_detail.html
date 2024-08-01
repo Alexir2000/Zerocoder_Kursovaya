@@ -9,6 +9,10 @@
             <li>{{ item.tovar.Nazvanie }} - {{ item.quantity }}</li>
         {% endfor %}
     </ul>
-    <a href="{% url 'catalog' %}" class="btn btn-primary">Вернуться к покупкам</a>
+    <a href="{% url 'catalog' %}" class="btn btn-primary">Продолжить покупки</a>
     <a href="{% url 'checkout' %}" class="btn btn-success">Оформить заказ</a>
+    <form method="post" action="{% url 'clear_cart' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger mt-2">Очистить корзину</button>
+    </form>
 {% endblock %}

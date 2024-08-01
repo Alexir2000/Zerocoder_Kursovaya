@@ -1,6 +1,5 @@
 {% extends 'main/base.html' %}
 {% load widget_tweaks %}
-
 {% block title %}Каталог товаров{% endblock %}
 
 {% block content %}
@@ -15,7 +14,7 @@
         <div class="form-group mx-sm-3 mb-2">
             {{ form.type|add_class:"form-control" }}
         </div>
-        <button type="submit" class="btn btn-primary mb-2">Найти</button>
+        <button type="submit" class="btn btn-primary mb-2">Поиск</button>
     </form>
     <div class="row">
         {% if tovars %}
@@ -25,7 +24,7 @@
                         {% if tovar.Img_url %}
                             <img src="{{ tovar.Img_url }}" class="card-img-top" alt="{{ tovar.Nazvanie }}">
                         {% else %}
-                            <img src="path/to/default-image.jpg" class="card-img-top" alt="Нет изображения">
+                            <img src="/static/images/default-image.jpg" class="card-img-top" alt="Изображение товара">
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ tovar.Nazvanie }}</h5>
