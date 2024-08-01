@@ -2,7 +2,7 @@ from django.db import models
 from main.models import Users, Tovar
 
 class CartItem(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    # user = models.ForeignKey(Users, on_delete=models.CASCADE)
     tovar = models.ForeignKey(Tovar, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 

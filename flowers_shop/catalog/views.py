@@ -1,8 +1,9 @@
 # flowers_shop/catalog/views.py
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from main.models import Tovar, Kat_Tovara, Tip_Tovara
 from .forms import TovarSearchForm
+from orders.models import CartItem
 
 def catalog_view(request):
     form = TovarSearchForm(request.GET)
@@ -21,3 +22,14 @@ def catalog_view(request):
             tovars = tovars.filter(ID_TipTovara=type)
 
     return render(request, 'catalog/catalog.html', {'tovars': tovars, 'form': form})
+
+def add_to_cart(request, tovar_id):
+    tovar = Tovar.objects.get(id=tovar_id)
+    quantity = int(request.POST.get('quantity', 1))
+    cart_item, created = CartItem.objects.get_or_create(tovar=tovar)
+    if not created:
+        cart_item.quantity += quantity
+    else:
+        cart_item.quantity = quantity
+    cart_item.save()
+    return redirect('cart_detail')

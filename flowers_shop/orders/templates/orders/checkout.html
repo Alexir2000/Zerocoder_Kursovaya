@@ -7,12 +7,7 @@
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Оформить заказ</button>
+        <button type="submit" class="btn btn-success">Подтвердить заказ</button>
     </form>
-    <ul>
-        {% for item in cart_items %}
-            <li>{{ item.tovar.Nazvanie }} - {{ item.quantity }}</li>
-        {% endfor %}
-    </ul>
-    <a href="{% url 'cart_detail' %}">Вернуться в корзину</a>
+    <a href="{% url 'cart_detail' %}" class="btn btn-secondary">Назад в корзину</a>
 {% endblock %}

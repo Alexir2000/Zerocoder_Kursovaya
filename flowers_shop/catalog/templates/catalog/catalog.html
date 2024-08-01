@@ -32,6 +32,14 @@
                             <p class="card-text">{{ tovar.Opisanie }}</p>
                             <p class="card-text"><strong>Цена: {{ tovar.Cena }} руб.</strong></p>
                             <p class="card-text">Рейтинг: {{ tovar.Reiting }}</p>
+                            <form method="post" action="{% url 'add_to_cart' tovar.id %}">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="quantity">Количество:</label>
+                                    <input type="number" name="quantity" id="quantity" class="form-control" value="1" min="1">
+                                </div>
+                                <button type="submit" class="btn btn-success">Добавить в корзину</button>
+                            </form>
                         </div>
                     </div>
                 </div>

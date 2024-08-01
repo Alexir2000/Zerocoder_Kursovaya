@@ -9,5 +9,6 @@
             <li>{{ item.tovar.Nazvanie }} - {{ item.quantity }}</li>
         {% endfor %}
     </ul>
-    <a href="{% url 'catalog' %}">Продолжить покупки</a>
+    <a href="{% url 'catalog' %}" class="btn btn-primary">Вернуться к покупкам</a>
+    <a href="{% url 'checkout' %}" class="btn btn-success">Оформить заказ</a>
 {% endblock %}
