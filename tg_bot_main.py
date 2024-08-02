@@ -23,6 +23,7 @@ from aiogram. fsm.state import State, StatesGroup
 from aiogram. fsm. storage. memory import MemoryStorage
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
+from aiogram.types import WebAppInfo
 
 from tg_bot.config import TOKEN
 import sqlite3
@@ -35,16 +36,19 @@ dp = Dispatcher()
 
 logging.basicConfig(level=logging.INFO)
 
+url_site = "http://127.0.0.1:8000/catalog/"
+url_site = "https://www.mebelhit.ru/"
 
 button_registr = KeyboardButton(text="Регистрация в телеграм-боте")
 button_exchange_rates = KeyboardButton(text="Курс валют")
-button_tips = KeyboardButton(text="Советы по экономии")
-button_finances = KeyboardButton(text="Личные финансы")
+button_run_flowers_shop = KeyboardButton(text="Магазин цветов", web_app=WebAppInfo(url=url_site))
+
 
 keyboard = ReplyKeyboardMarkup(keyboard=[
     [button_registr, button_exchange_rates],
-    [button_tips, button_finances]
+    [button_run_flowers_shop]
 ], resize_keyboard=True)
+
 
 Base = declarative_base()
 class User(Base):
@@ -62,13 +66,6 @@ class User(Base):
 engine_bot = create_engine('sqlite:///user.db', echo=True)
 Session_bot = sessionmaker(bind=engine_bot)
 
-class FinancesForm(StatesGroup):
-    category1 = State()
-    expenses1 = State()
-    category2 = State()
-    expenses2 = State()
-    category3 = State()
-    expenses3 = State()
 
 def print_db():
     # Создание сессии
@@ -105,6 +102,24 @@ async def start_command(message: Message):
 async def help_command(message: Message):
    await message.answer("Тут помощь. Есть такие команды: \n "
                         "/del_registr - удалить регистрацию \n ")
+
+# @dp.message(F.text == "Магазин цветов")
+# async def run_flowers_shop_button(message: Message):
+#     url_site = "http://127.0.0.1:8000/catalog/"
+#     url_site = "https://www.mebelhit.ru/"
+#     print("\n\n\n\nЗапуск магазина цветов\n\n\n\n")
+#     await message.answer("Запуск магазина цветов",
+#                          reply_markup=InlineKeyboardMarkup().add(InlineKeyboardButton(
+#                              text="Открыть магазин",
+#                              web_app=WebAppInfo(url=url_site)
+#                          )))
+
+
+
+
+
+
+
 
 @dp.message(F.text == "Регистрация в телеграм-боте")
 async def registration(message: Message):
@@ -158,91 +173,6 @@ async def exchange_rates(message: Message):
                              f"1 EUR - {euro_to_rub:.2f}  RUB")
     except:
         await message.answer("Произошла ошибка")
-
-
-@dp.message(F.text == "Советы по экономии")
-async def send_tips(message: Message):
-    tips = [
-        "Совет 1: Ведите бюджет и следите за своими расходами.",
-        "Совет 2: Откладывайте часть доходов на сбережения.",
-        "Совет 3: Покупайте товары по скидкам и распродажам.",
-        "Совет 4: Избегайте импульсивных покупок.",
-        "Совет 5: Планируйте свои покупки заранее.",
-        "Совет 6: Сравнивайте цены перед покупкой.",
-        "Совет 7: Используйте общественный транспорт вместо такси.",
-        "Совет 8: Готовьте еду дома вместо того, чтобы заказывать.",
-        "Совет 9: Избегайте долгов и кредитов, если это возможно.",
-        "Совет 10: Ищите бесплатные или недорогие развлечения.",
-        "Совет 11: Регулярно проверяйте свои банковские выписки.",
-        "Совет 12: Инвестируйте в свое образование и навыки."
-    ]
-    tip = random.choice(tips)
-    await message.answer(tip)
-
-@dp.message(F.text == "Личные финансы")
-async def finances(message: Message, state: FSMContext):
-    await state.set_state(FinancesForm.category1)
-    await message.reply("Введите первую категорию расходов:")
-
-@dp.message(FinancesForm.category1)
-async def finances(message: Message, state: FSMContext):
-   await state.update_data(category1 = message.text)
-   await state.set_state(FinancesForm.expenses1)
-   await message.reply("Введите расходы для категории 1:")
-
-@dp.message(FinancesForm.expenses1)
-async def finances(message: Message, state: FSMContext):
-   await state.update_data(expenses1 = float(message.text))
-   await state.set_state(FinancesForm.category2)
-   await message.reply("Введите вторую категорию расходов:")
-
-@dp.message(FinancesForm.category2)
-async def finances(message: Message, state: FSMContext):
-   await state.update_data(category2 = message.text)
-   await state.set_state(FinancesForm.expenses2)
-   await message.reply("Введите расходы для категории 2:")
-
-@dp.message(FinancesForm.expenses2)
-async def finances(message: Message, state: FSMContext):
-   await state.update_data(expenses2 = float(message.text))
-   await state.set_state(FinancesForm.category3)
-   await message.reply("Введите третью категорию расходов:")
-
-@dp.message(FinancesForm.category3)
-async def finances(message: Message, state: FSMContext):
-   await state.update_data(category3 = message.text)
-   await state.set_state(FinancesForm.expenses3)
-   await message.reply("Введите расходы для категории 3:")
-
-@dp.message(FinancesForm.expenses3)
-async def finances(message: Message, state: FSMContext):
-    session = Session_bot()
-    try:
-        data = await state.get_data()
-        telegram_id = message.from_user.id
-        # Поиск пользователя по telegram_id
-        user = session.query(User).filter(User.telegram_id == telegram_id).first()
-        if user:
-            # Обновление данных пользователя
-            user.category1 = data.get('category1')
-            user.expenses1 = data.get('expenses1')
-            user.category2 = data.get('category2')
-            user.expenses2 = data.get('expenses2')
-            user.category3 = data.get('category3')
-            user.expenses3 = float(message.text)
-            # Сохранение изменений
-            session.commit()
-            await message.answer("Категории и расходы сохранены!")
-        else:
-            await message.answer("Пользователь не найден.")
-    except Exception as e:
-        await message.answer(f"Произошла ошибка: {e}")
-        session.rollback()
-    finally:
-        session.close()
-    await state.clear()
-
-
 
 
 
