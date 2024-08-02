@@ -1,0 +1,10 @@
+
+TOKEN = '6673048208:AAF6N3AXFW0rqb_y8Hnp4On8DWB-xo9ztkU'
+API_POGODA = "c68a48b0d05413cbf7464521c35937db"
+
+# https://thecatapi.com/
+TOKEN_CAT = "live_laudJinPEFxH2fNrp8QgtGsclb6k7WGh3cNaVBXB3pwyCQzZXqSbDY8YTe2nki8G"
+
+TOKEN_NASA = "58asjprJCmG7qZzVmHGnRkhCXCOR4Y7CAVd2XRBz"
+
+
