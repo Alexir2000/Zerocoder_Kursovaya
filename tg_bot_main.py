@@ -6,6 +6,8 @@
 # -получение советов по экономии в виде текста;
 # -ведение учёта личных финансов по трём категориям.
 
+# документация по aiogram https://docs.aiogram.dev/en/dev-3.x/
+
 import sqlite3
 import random
 from sqlalchemy import create_engine, Column, Integer, String, Float
@@ -22,13 +24,11 @@ from aiogram. fsm. storage. memory import MemoryStorage
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-from config import TOKEN
+from tg_bot.config import TOKEN
 import sqlite3
 import aiohttp
 import logging
 import requests
-
-from config import TOKEN
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
