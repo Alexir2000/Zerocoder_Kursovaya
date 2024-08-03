@@ -36,60 +36,20 @@ dp = Dispatcher()
 
 logging.basicConfig(level=logging.INFO)
 
-url_site = "http://127.0.0.1:8000/catalog/"
+url_site = "https://localhost:8000/catalog/"
 url_site = "https://www.mebelhit.ru/"
 
-button_registr = KeyboardButton(text="Регистрация в телеграм-боте")
 button_exchange_rates = KeyboardButton(text="Курс валют")
-button_run_flowers_shop = KeyboardButton(text="Магазин цветов", web_app=WebAppInfo(url=url_site))
+button_get_korzina = KeyboardButton(text="Получить корзину")
+button_get_zakaz = KeyboardButton(text="Получить заказ")
+# button_run_flowers_shop = KeyboardButton(text="Магазин цветов", web_app=WebAppInfo(url=url_site))
 
 
 keyboard = ReplyKeyboardMarkup(keyboard=[
-    [button_registr, button_exchange_rates],
-    [button_run_flowers_shop]
+    [ button_exchange_rates, button_get_korzina],
+     [button_get_zakaz]
+    # [button_run_flowers_shop]
 ], resize_keyboard=True)
-
-
-Base = declarative_base()
-class User(Base):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    telegram_id = Column(Integer, unique=True, nullable=False)
-    name = Column(String, nullable=True)
-    category1 = Column(String, nullable=True)
-    category2 = Column(String, nullable=True)
-    category3 = Column(String, nullable=True)
-    expenses1 = Column(Float, nullable=True)
-    expenses2 = Column(Float, nullable=True)
-    expenses3 = Column(Float, nullable=True)
-# Движок и сессия вне функции, чтобы использовать их повторно
-engine_bot = create_engine('sqlite:///user.db', echo=True)
-Session_bot = sessionmaker(bind=engine_bot)
-
-
-def print_db():
-    # Создание сессии
-    session = Session_bot()
-    try:
-        # Получение всех записей из таблицы users
-        users = session.query(User).all()
-        # Печать каждой записи
-        for user in users:
-            print("\n\n Печать результатов \n\n")
-            print(f"ID: {user.id},\n Telegram ID: {user.telegram_id}, Name: {user.name}, "
-                  f"Category1: {user.category1}, Category2: {user.category2}, Category3: {user.category3}, "
-                  f"Expenses1: {user.expenses1}, Expenses2: {user.expenses2}, Expenses3: {user.expenses3}\n")
-            print("\n\n завершение печати \n\n")
-
-    except Exception as e:
-        print(f"Произошла ошибка: {e}")
-    finally:
-        # Закрытие сессии
-        session.close()
-
-def init_db_bot():
-    # Создаем таблицы, если они не существуют
-    Base.metadata.create_all(engine_bot)
 
 
 # ++++++++++++++++++++++++++++=================++++++++++++++++++++++
@@ -103,59 +63,31 @@ async def help_command(message: Message):
    await message.answer("Тут помощь. Есть такие команды: \n "
                         "/del_registr - удалить регистрацию \n ")
 
-# @dp.message(F.text == "Магазин цветов")
-# async def run_flowers_shop_button(message: Message):
-#     url_site = "http://127.0.0.1:8000/catalog/"
-#     url_site = "https://www.mebelhit.ru/"
-#     print("\n\n\n\nЗапуск магазина цветов\n\n\n\n")
-#     await message.answer("Запуск магазина цветов",
-#                          reply_markup=InlineKeyboardMarkup().add(InlineKeyboardButton(
-#                              text="Открыть магазин",
-#                              web_app=WebAppInfo(url=url_site)
-#                          )))
 
 
-
-
-
-
-
-
-@dp.message(F.text == "Регистрация в телеграм-боте")
-async def registration(message: Message):
-    session = Session_bot()
+@dp.message(F.text == "Получить корзину")
+async def get_zakaz_from_site(message: Message):
+    url = "http://127.0.0.1:8000/catalog_put_korzina"
     try:
-        telegram_id = message.from_user.id
-        name = message.from_user.full_name
-        user = session.query(User).filter(User.telegram_id == telegram_id).first()
-        if user:
-            await message.answer("Вы уже зарегистрированы!")
-        else:
-            new_user = User(telegram_id=telegram_id, name=name)
-            session.add(new_user)
-            session.commit()
-            await message.answer("Вы успешно зарегистрированы!")
-    except Exception as e:
-        await message.answer(f"Произошла ошибка: {e}")
-    finally:
-        session.close()
+        response = requests.get(url)
+        data = response.json()
+    except:
+        await message.answer("Произошла ошибка")
 
-@dp.message(Command(commands=['del_registr']))
-async def del_registr(message: Message):
-    session = Session_bot()
+@dp.message(F.text == "Получить заказ")
+async def get_zakaz_from_site(message: Message):
+    url = "http://127.0.0.1:8000/catalog_put_zakaz"
     try:
-        telegram_id = message.from_user.id
-        user = session.query(User).filter(User.telegram_id == telegram_id).first()
-        if user:
-            session.delete(user)
-            session.commit()
-            await message.answer("Ваша регистрация была удалена.")
-        else:
-            await message.answer("Вы не зарегистрированы.")
-    except Exception as e:
-        await message.answer(f"Произошла ошибка: {e}")
-    finally:
-        session.close()
+        response = requests.get(url)
+        data = response.json()
+    except:
+        await message.answer("Произошла ошибка")
+
+
+
+
+
+
 
 @dp.message(F.text == "Курс валют")
 async def exchange_rates(message: Message):
