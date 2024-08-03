@@ -25,7 +25,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from aiogram.types import WebAppInfo
 
-from tg_bot.config import TOKEN
+from tg_bot.config import TOKEN, URL_API_GET_KORZINA, URL_API_GET_ZAKAZ
 import sqlite3
 import aiohttp
 import logging
@@ -67,7 +67,7 @@ async def help_command(message: Message):
 
 @dp.message(F.text == "Получить корзину")
 async def get_zakaz_from_site(message: Message):
-    url = "http://127.0.0.1:8000/catalog_put_korzina"
+    url = URL_API_GET_KORZINA
     try:
         response = requests.get(url)
         data = response.json()
@@ -76,7 +76,7 @@ async def get_zakaz_from_site(message: Message):
 
 @dp.message(F.text == "Получить заказ")
 async def get_zakaz_from_site(message: Message):
-    url = "http://127.0.0.1:8000/catalog_put_zakaz"
+    url = URL_API_GET_ZAKAZ
     try:
         response = requests.get(url)
         data = response.json()
