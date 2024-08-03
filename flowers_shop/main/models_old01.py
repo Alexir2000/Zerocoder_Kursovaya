@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.auth.models import AbstractUser
-from django.conf import settings
 
 # Статусы доступа пользователей
 class StatusDostupa(models.Model):
@@ -12,31 +10,34 @@ class StatusDostupa(models.Model):
     def __str__(self):
         return self.Status
 
-# Пользователи системы - расширение внутренней базы данных
 class CustomUser(AbstractUser):
     StatusID = models.ForeignKey(StatusDostupa, on_delete=models.SET_DEFAULT, default=2)
+    Name = models.CharField(max_length=255)
+    Family = models.CharField(max_length=255, blank=True, default="")
+    email = models.EmailField(unique=True)
     telefon = models.CharField(max_length=20, blank=True, default="")
     Primechanie = models.TextField(blank=True, default="")
     tg_Chat_ID = models.CharField(max_length=255, null=True, blank=True)
     tg_User_ID = models.CharField(max_length=255, null=True, blank=True)
-
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='customuser_set',  # Измените related_name
-        blank=True,
-        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
-        related_query_name='user',
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='customuser_set',  # Измените related_name
-        blank=True,
-        help_text='Specific permissions for this user.',
-        related_query_name='user',
-    )
-
     def __str__(self):
         return f"{self.username} ({self.email})"
+
+# Пользователи системы
+class Users(models.Model):
+    ID = models.AutoField(primary_key=True)
+    StatusID = models.ForeignKey(StatusDostupa, on_delete=models.CASCADE)
+    email = models.EmailField(max_length=255, unique=True)
+    telefon = models.CharField(max_length=20)
+    adres = models.TextField()
+    Primechanie = models.TextField(null=True, blank=True)
+    ID_vnutr = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
+    password = models.CharField(max_length=128, null=True, blank=True)
+    Chat_ID = models.CharField(max_length=255, null=True, blank=True, default=None)
+    Name = models.CharField(max_length=255, null=True, blank=True, default=None)
+    Family = models.CharField(max_length=255, null=True, blank=True, default=None)
+
+    def __str__(self):
+        return self.email
 
 # Типы товаров
 class Tip_Tovara(models.Model):
@@ -80,7 +81,7 @@ class StatusZakaza(models.Model):
 class Zakaz(models.Model):
     ID = models.AutoField(primary_key=True)
     ID_TipZakaza = models.CharField(max_length=255)
-    ID_User = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)  # Используйте settings.AUTH_USER_MODEL и on_delete=models.PROTECT
+    ID_User = models.ForeignKey(Users, on_delete=models.CASCADE)
     ID_Tovar = models.ForeignKey(Tovar, on_delete=models.CASCADE)
     Kolichestvo = models.PositiveIntegerField()
     DataZakaza = models.DateTimeField(auto_now_add=True)
@@ -89,12 +90,12 @@ class Zakaz(models.Model):
     ID_Status = models.ForeignKey(StatusZakaza, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'Order {self.ID} by {self.ID_User.username}'
+        return f'Order {self.ID} by {self.ID_User.email}'
 
 # Отзывы
 class BaseOtziv(models.Model):
     ID = models.AutoField(primary_key=True)
-    ID_User = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)  # Используйте settings.AUTH_USER_MODEL и on_delete=models.PROTECT
+    ID_User = models.ForeignKey(Users, on_delete=models.CASCADE)
     ID_Tovar = models.ForeignKey(Tovar, on_delete=models.CASCADE)
     Otziv = models.CharField(max_length=500)
     ReitingTovara = models.PositiveIntegerField(choices=[(i, i) for i in range(1, 6)])

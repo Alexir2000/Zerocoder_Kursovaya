@@ -1,7 +1,20 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from .forms import TovarSearchForm
 from orders.models import CartItem
 from main.models import Tovar
+
+def catalog_put_korzina(request):
+    cart_items = CartItem.objects.all()
+    cart_data = [
+        {
+            'tovar': item.tovar.Nazvanie,
+            'quantity': item.quantity
+        }
+        for item in cart_items
+    ]
+    print(cart_data)
+    return JsonResponse(cart_data, safe=False)
 
 def catalog_view(request):
     form = TovarSearchForm(request.GET)

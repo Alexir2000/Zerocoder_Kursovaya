@@ -1,10 +1,3 @@
-# TG06. Разработка чат-бота
-# Закрепим материалы по Telegram-ботам на примере кейса «Финансовый бот-помощник»
-#функционал нашего бота. Бот будет иметь несколько возможностей:
-# -регистрация пользователя в Telegram;
-# -просмотр курса валют с помощью API или парсинга;
-# -получение советов по экономии в виде текста;
-# -ведение учёта личных финансов по трём категориям.
 
 # документация по aiogram https://docs.aiogram.dev/en/dev-3.x/
 
@@ -66,13 +59,16 @@ async def help_command(message: Message):
 
 
 @dp.message(F.text == "Получить корзину")
-async def get_zakaz_from_site(message: Message):
+async def get_korzina_from_site(message: Message):
     url = URL_API_GET_KORZINA
     try:
         response = requests.get(url)
         data = response.json()
+        # Форматирование и отправка сообщения с данными о корзине
+        response_message = "\n".join([f"Товар: {item['tovar']}, Количество: {item['quantity']}" for item in data])
+        await message.answer(response_message)
     except:
-        await message.answer("Произошла ошибка")
+        await message.answer("Не удалось получить данные.")
 
 @dp.message(F.text == "Получить заказ")
 async def get_zakaz_from_site(message: Message):

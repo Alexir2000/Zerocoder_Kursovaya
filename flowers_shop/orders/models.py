@@ -1,5 +1,5 @@
 from django.db import models
-from main.models import Users, Tovar
+from main.models import Tovar
 
 class CartItem(models.Model):
     # user = models.ForeignKey(Users, on_delete=models.CASCADE)

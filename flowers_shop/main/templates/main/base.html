@@ -39,10 +39,36 @@
             <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
                 <div class="sidebar-sticky">
                     <ul class="nav flex-column">
-                        <!-- Оставим этот блок пустым -->
+                        <!-- Информация о пользователе -->
+                        {% if user.is_authenticated %}
+                            <li class="nav-item">
+                                <strong>Пользователь:</strong> {{ user.username }}
+                            </li>
+                            <li class="nav-item">
+                                <strong>Статус:</strong> {{ user.StatusID.Status }}
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'logout' %}">Выход</a> <!-- Кнопка выхода -->
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <strong>Пользователь:</strong> не зарегистрирован
+                            </li>
+                            <li class="nav-item">
+                                <strong>Статус:</strong> не определен
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'register' %}">Регистрация</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'login' %}">Вход</a>
+                            </li>
+                        {% endif %}
                     </ul>
                 </div>
             </nav>
+
+
             <main role="main" class="col-md-7 ml-sm-auto col-lg-8 px-4">
                 {% block content %}{% endblock %}
             </main>
