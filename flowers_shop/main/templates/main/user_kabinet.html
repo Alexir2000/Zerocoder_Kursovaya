@@ -4,25 +4,39 @@
 {% block title %}Личный кабинет{% endblock %}
 
 {% block content %}
-    <h2>Личный кабинет</h2>
-    <h3>Мои заказы</h3>
+    <div class="container mt-4">
+        <h2 class="mb-4">Личный кабинет</h2>
+        <h3 class="mb-3">Мои заказы</h3>
 
-    {% for order_info in orders_info %}
-        <div class="order">
-            <h4>Заказ №{{ order_info.order.ID }}</h4>
-            <p>Дата: {{ order_info.order.DataZakaza|date:"d.m.Y H:i" }}</p>
-            <p>Адрес доставки: {{ order_info.adresa.Gorod }}, {{ order_info.adresa.adres }}</p>
-            <p>Контактное лицо: {{ order_info.adresa.kontakt }}</p>
-            <p>Телефон для связи: {{ order_info.adresa.telefon }}</p>
+        {% for order_info in orders_info %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header">
+                    <h4>Заказ №{{ order_info.order.ID }}</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Дата:</strong> {{ order_info.order.DataZakaza|date:"d.m.Y H:i" }}</p>
+                    {% if order_info.adresa %}
+                        <p><strong>Адрес доставки:</strong> {{ order_info.adresa.Gorod }}, {{ order_info.adresa.adres }}</p>
+                        <p><strong>Контактное лицо:</strong> {{ order_info.adresa.kontakt }}</p>
+                        <p><strong>Телефон для связи:</strong> {{ order_info.adresa.telefon }}</p>
+                        <p><strong>Примечание:</strong> {{ order_info.order.Primechanie }}</p> <!-- Примечание -->
+                    {% else %}
+                        <p><strong>Адрес доставки:</strong> не указан</p>
+                    {% endif %}
 
-            <h5>Товары:</h5>
-            <ul>
-                {% for item in order_info.otgruzki %}
-                    <li>{{ item.tovar_id.Nazvanie }} - {{ item.cena }} руб. ({{ item.quantity }} шт.)</li>
-                {% endfor %}
-            </ul>
-            <p><strong>Общая стоимость: {{ order_info.total_price }} руб.</strong></p>
-        </div>
-        <hr>
-    {% endfor %}
+                    <h5>Товары:</h5>
+                    <ul class="list-group mb-3">
+                        {% for item in order_info.otgruzki %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ item.tovar_id.Nazvanie }} - {{ item.cena }} руб.
+                                <span class="badge badge-primary badge-pill">{{ item.quantity }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <p><strong>Общая стоимость:</strong> {{ order_info.total_price }} руб.</p>
+                    <a href="{% url 'repeat_order' order_info.order.ID %}" class="btn btn-success">Повторить заказ</a> <!-- Кнопка "Повторить заказ" -->
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

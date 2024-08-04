@@ -1,9 +1,11 @@
 # catalog/views.py
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .forms import TovarSearchForm
 from orders.models import CartItem
-from main.models import Tovar
+from main.models import Tovar, Zakaz, Adresa, Otgruzka
+import json
 
 
 def catalog_put_korzina(request):
@@ -20,6 +22,63 @@ def catalog_put_korzina(request):
         for item in cart_items
     ]
     return JsonResponse(cart_data, safe=False)
+
+
+def catalog_put_zakaz(request):
+    zakaz = Zakaz.objects.filter(Peredano_v_bot=False).order_by('DataZakaza').first()
+
+    if not zakaz:
+        return JsonResponse({'error': 'Нет заказов для отправки'}, status=404)
+
+    try:
+        adresa = Adresa.objects.get(ID=zakaz.ID_adres_id)
+    except Adresa.DoesNotExist:
+        adresa = None
+
+    otgruzki = Otgruzka.objects.filter(ID_Zakaz=zakaz)
+    total_price = sum(item.cena * item.quantity for item in otgruzki)
+
+    zakaz_data = {
+        'Vid_Put': 'Zakaz',
+        'ID': zakaz.ID,
+        'Data': zakaz.DataZakaza.strftime("%d.%m.%Y %H:%M"),
+        'Adres': f"{adresa.Gorod}, {adresa.adres}" if adresa else "не указан",
+        'Kontakt': adresa.kontakt if adresa else "не указан",
+        'Telefon': adresa.telefon if adresa else "не указан",
+        'Primechanie': zakaz.Primechanie,
+        'Tovary': [
+            {
+                'Nazvanie': item.tovar_id.Nazvanie,
+                'Cena': item.cena,
+                'Kolichestvo': item.quantity
+            }
+            for item in otgruzki
+        ],
+        'Obshaya_Stoimost': total_price
+    }
+
+    return JsonResponse(zakaz_data, safe=False)
+
+
+@csrf_exempt
+def ok_put_response(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            zakaz_id = data.get('ID')
+
+            zakaz = Zakaz.objects.get(ID=zakaz_id)
+            zakaz.Peredano_v_bot = True
+            zakaz.save()
+
+            return JsonResponse({'Status': 'Put_OK'})
+        except Zakaz.DoesNotExist:
+            return JsonResponse({'Status': 'Put_failed'}, status=404)
+        except Exception as e:
+            return JsonResponse({'Status': 'Put_failed', 'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'Status': 'Put_failed'}, status=405)
+
 
 
 def catalog_view(request):

@@ -1,6 +1,3 @@
-
-# документация по aiogram https://docs.aiogram.dev/en/dev-3.x/
-
 import sqlite3
 import random
 from sqlalchemy import create_engine, Column, Integer, String, Float
@@ -9,11 +6,11 @@ from sqlalchemy.orm import sessionmaker
 from aiogram.types import Message
 import asyncio
 from aiogram import Bot, Dispatcher, F
-from aiogram. filters import CommandStart, Command
-from aiogram. types import Message, FSInputFile
-from aiogram. fsm. context import FSMContext
-from aiogram. fsm.state import State, StatesGroup
-from aiogram. fsm. storage. memory import MemoryStorage
+from aiogram.filters import CommandStart, Command
+from aiogram.types import Message, FSInputFile
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from aiogram.types import WebAppInfo
@@ -35,28 +32,63 @@ url_site = "https://www.mebelhit.ru/"
 button_exchange_rates = KeyboardButton(text="Курс валют")
 button_get_korzina = KeyboardButton(text="Получить корзину")
 button_get_zakaz = KeyboardButton(text="Получить заказ")
-# button_run_flowers_shop = KeyboardButton(text="Магазин цветов", web_app=WebAppInfo(url=url_site))
-
+button_start_auto_requests = KeyboardButton(text="Запуск авто-запросов")
+button_stop_auto_requests = KeyboardButton(text="Остановка авто-запросов")
 
 keyboard = ReplyKeyboardMarkup(keyboard=[
-    [ button_exchange_rates, button_get_korzina],
-     [button_get_zakaz]
-    # [button_run_flowers_shop]
+    [button_exchange_rates, button_get_korzina],
+    [button_get_zakaz],
+    [button_start_auto_requests, button_stop_auto_requests]
 ], resize_keyboard=True)
 
+auto_request_task = None
 
-# ++++++++++++++++++++++++++++=================++++++++++++++++++++++
-# Функции БОТА
+async def auto_request_zakaz():
+    while True:
+        await fetch_zakaz()
+        await asyncio.sleep(2)
+
+async def fetch_zakaz():
+    url = URL_API_GET_ZAKAZ
+    ok_put_response_url = "http://127.0.0.1:8000/catalog/Ok_put_response"
+    try:
+        response = requests.get(url)
+        data = response.json()
+        if 'error' in data:
+            return
+        response_message = (
+            f"Вид Отправки: {data['Vid_Put']}\n"
+            f"ID Заказа: {data['ID']}\n"
+            f"Дата: {data['Data']}\n"
+            f"Адрес доставки: {data['Adres']}\n"
+            f"Контактное лицо: {data['Kontakt']}\n"
+            f"Телефон: {data['Telefon']}\n"
+            f"Примечание: {data['Primechanie']}\n"
+            f"Товары:\n"
+        )
+        for item in data['Tovary']:
+            response_message += f"  - {item['Nazvanie']}: {item['Cena']} руб. x {item['Kolichestvo']}\n"
+        response_message += f"Общая стоимость: {data['Obshaya_Stoimost']} руб."
+        await bot.send_message(chat_id, response_message)
+        confirm_response = requests.post(ok_put_response_url, json={'ID': data['ID']})
+        confirm_data = confirm_response.json()
+        if confirm_data.get('Status') == 'Put_OK':
+            await bot.send_message(chat_id, f"Заказ ID {data['ID']} подтвержден.")
+        else:
+            await bot.send_message(chat_id, f"Ошибка подтверждения заказа ID {data['ID']}.")
+    except Exception as e:
+        logging.error(f"Произошла ошибка при получении данных: {str(e)}")
+
 @dp.message(Command(commands=['start']))
 async def start_command(message: Message):
-   await message.answer("Привет! Выберите кнопку с действием", reply_markup=keyboard)
+    global chat_id
+    chat_id = message.chat.id
+    await message.answer("Привет! Выберите кнопку с действием", reply_markup=keyboard)
 
 @dp.message(Command(commands=['help']))
 async def help_command(message: Message):
-   await message.answer("Тут помощь. Есть такие команды: \n "
-                        "/del_registr - удалить регистрацию \n ")
-
-
+    await message.answer("Тут помощь. Есть такие команды: \n "
+                         "/del_registr - удалить регистрацию \n ")
 
 @dp.message(F.text == "Получить корзину")
 async def get_korzina_from_site(message: Message):
@@ -64,7 +96,6 @@ async def get_korzina_from_site(message: Message):
     try:
         response = requests.get(url)
         data = response.json()
-        # Форматирование и отправка сообщения с данными о корзине
         response_message = "\n".join([f"Товар: {item['tovar']}, Количество: {item['quantity']}" for item in data])
         await message.answer(response_message)
     except:
@@ -72,18 +103,26 @@ async def get_korzina_from_site(message: Message):
 
 @dp.message(F.text == "Получить заказ")
 async def get_zakaz_from_site(message: Message):
-    url = URL_API_GET_ZAKAZ
-    try:
-        response = requests.get(url)
-        data = response.json()
-    except:
-        await message.answer("Произошла ошибка")
+    await fetch_zakaz()
 
+@dp.message(F.text == "Запуск авто-запросов")
+async def start_auto_requests(message: Message):
+    global auto_request_task
+    if auto_request_task is None:
+        auto_request_task = asyncio.create_task(auto_request_zakaz())
+        await message.answer("Автоматические запросы запущены.")
+    else:
+        await message.answer("Автоматические запросы уже запущены.")
 
-
-
-
-
+@dp.message(F.text == "Остановка авто-запросов")
+async def stop_auto_requests(message: Message):
+    global auto_request_task
+    if auto_request_task:
+        auto_request_task.cancel()
+        auto_request_task = None
+        await message.answer("Автоматические запросы остановлены.")
+    else:
+        await message.answer("Автоматические запросы не запущены.")
 
 @dp.message(F.text == "Курс валют")
 async def exchange_rates(message: Message):
@@ -102,16 +141,14 @@ async def exchange_rates(message: Message):
     except:
         await message.answer("Произошла ошибка")
 
-
-
 # ++++++++++++++++++++++++++++=================++++++++++++++++++++++
 
 # init_db_bot() # единовременный запуск создания базы. потом комментируем
 
 async def main():
-   await dp.start_polling(bot)
+    await dp.start_polling(bot)
 
 if __name__ == '__main__':
-   asyncio.run(main())
+    asyncio.run(main())
 
 # print_db() # функция печати содержимого базы для проверки.
