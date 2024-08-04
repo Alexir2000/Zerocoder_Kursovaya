@@ -34,7 +34,11 @@
                 </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'user_kabinet' %}">Личный кабинет</a>
+                        {% if user.StatusID_id == 2 %}
+                            <a class="nav-link" href="{% url 'user_kabinet' %}">Личный кабинет</a>
+                        {% elif user.StatusID_id == 3 %}
+                            <a class="nav-link" href="{% url 'manager_kabinet' %}">Личный кабинет</a>
+                        {% endif %}
                     </li>
                 {% endif %}
             </ul>

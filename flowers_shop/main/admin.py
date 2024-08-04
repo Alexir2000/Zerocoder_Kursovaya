@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import StatusDostupa, Tip_Tovara, Kat_Tovara, Tovar, StatusZakaza, Zakaz, BaseOtziv, Otchet, CustomUser
-from .models import Otgruzka, Adresa
+from .models import Otgruzka, Adresa, Zhurnal_status_Zakaza
 from orders.models import CartItem
 @admin.register(StatusDostupa)
 class StatusDostupaAdmin(admin.ModelAdmin):
@@ -89,3 +89,9 @@ class AdresaAdmin(admin.ModelAdmin):
     list_display = ('ID_Zakaz', 'ID_User', 'Gorod', 'adres', 'kontakt', 'telefon', 'adres_ediniy', 'Nazvanie_adresa')
     search_fields = ('Gorod', 'adres', 'kontakt', 'telefon', 'Nazvanie_adresa')
     list_filter = ('adres_ediniy', 'Gorod')
+
+@admin.register(Zhurnal_status_Zakaza)
+class ZhurnalStatusZakazaAdmin(admin.ModelAdmin):
+    list_display = ('ID', 'ID_Zakaza', 'Izmenenie', 'pole_izm', 'json_str')
+    search_fields = ('ID_Zakaza__ID', 'Izmenenie', 'pole_izm', 'json_str')
+    list_filter = ('ID_Zakaza', 'Izmenenie')

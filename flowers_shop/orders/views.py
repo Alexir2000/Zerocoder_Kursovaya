@@ -5,6 +5,8 @@ from main.models import Tovar
 from .forms import OrderForm
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.utils.timezone import localtime
+from django.conf import settings
 import datetime
 from main.models import StatusZakaza, Adresa, Zakaz, Otgruzka
 
@@ -37,11 +39,31 @@ def cart_detail(request):
         session_id = request.session.session_key
         cart_items = CartItem.objects.filter(session_id=session_id, is_registered=False)
     total_price = sum(item.cena * item.quantity for item in cart_items)  # Вычисление общей суммы
-    return render(request, 'orders/cart_detail.html', {'cart_items': cart_items, 'total_price': total_price})
+    context = {
+        'cart_items': cart_items,
+        'total_price': total_price,
+        'time_work_on': settings.TIME_WORK_ON,
+        'time_work_off': settings.TIME_WORK_OFF,
+    }
+    return render(request, 'orders/cart_detail.html', context)
+
 
 @login_required
 def checkout(request):
     cart_items = CartItem.objects.filter(user=request.user, is_registered=True)
+    current_time = localtime()
+    time_work_on = datetime.datetime.strptime(settings.TIME_WORK_ON, "%H:%M:%S").time()
+    time_work_off = datetime.datetime.strptime(settings.TIME_WORK_OFF, "%H:%M:%S").time()
+
+    if current_time.time() < time_work_on or current_time.time() > time_work_off:
+        return render(request, 'orders/cart_detail.html', {
+            'cart_items': cart_items,
+            'total_price': sum(item.cena * item.quantity for item in cart_items),
+            'time_work_on': settings.TIME_WORK_ON,
+            'time_work_off': settings.TIME_WORK_OFF,
+            'error_message': f'Оформление заказов возможно только в рабочее время: с {settings.TIME_WORK_ON} по {settings.TIME_WORK_OFF}.'
+        })
+
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
@@ -77,7 +99,7 @@ def checkout(request):
             return redirect('order_success')
     else:
         form = OrderForm()
-    current_time = datetime.datetime.now()
+
     total_price = sum(item.cena * item.quantity for item in cart_items)
     context = {
         'form': form,
@@ -85,11 +107,12 @@ def checkout(request):
         'user_name': request.user.username,
         'user_email': request.user.email,
         'user_phone': request.user.telefon,
-        'current_date': current_time.date,
-        'current_time': current_time.time,
+        'current_date': current_time.date(),  # Исправлено здесь
+        'current_time': current_time.time(),  # Исправлено здесь
         'total_price': total_price
     }
     return render(request, 'orders/checkout.html', context)
+
 
 
 @login_required

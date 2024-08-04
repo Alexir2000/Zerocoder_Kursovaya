@@ -98,7 +98,7 @@ class Adresa(models.Model):
 class Zakaz(models.Model):
     ID = models.AutoField(primary_key=True)
     ID_TipZakaza = models.CharField(max_length=255)
-    ID_User = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    ID_User = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Изменено с PROTECT на CASCADE
     ID_adres = models.ForeignKey(Adresa, on_delete=models.SET_NULL, null=True)
     Kolichestvo_klon = models.PositiveIntegerField(default=1)
     Primechanie = models.TextField(max_length=600, blank=True, default="")
@@ -129,7 +129,7 @@ class Otgruzka(models.Model):
 # Отзывы
 class BaseOtziv(models.Model):
     ID = models.AutoField(primary_key=True)
-    ID_User = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)  # Используйте settings.AUTH_USER_MODEL и on_delete=models.PROTECT
+    ID_User = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Изменено с PROTECT на CASCADE
     ID_Tovar = models.ForeignKey(Tovar, on_delete=models.CASCADE)
     Otziv = models.CharField(max_length=500)
     ReitingTovara = models.PositiveIntegerField(choices=[(i, i) for i in range(1, 6)])
@@ -149,3 +149,13 @@ class Otchet(models.Model):
 
     def __str__(self):
         return f'Otchet for {self.Data} - Order {self.ID_Zakaz.ID}'
+
+
+class Zhurnal_status_Zakaza(models.Model):
+    ID = models.AutoField(primary_key=True)
+    ID_Zakaza = models.ForeignKey(Zakaz, on_delete=models.CASCADE)
+    Izmenenie = models.CharField(max_length=255)
+    pole_izm = models.CharField(max_length=255, blank=True, null=True)
+    json_str = models.CharField(max_length=600)
+    def __str__(self):
+        return f"Изменение {self.Izmenenie} для заказа {self.ID_Zakaza.ID}"
