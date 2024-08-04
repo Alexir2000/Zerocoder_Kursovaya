@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import StatusDostupa, Tip_Tovara, Kat_Tovara, Tovar, StatusZakaza, Zakaz, BaseOtziv, Otchet, CustomUser
-
+from .models import Otgruzka, Adresa
+from orders.models import CartItem
 @admin.register(StatusDostupa)
 class StatusDostupaAdmin(admin.ModelAdmin):
     list_display = ('ID', 'Status')
@@ -30,13 +31,18 @@ class StatusZakazaAdmin(admin.ModelAdmin):
 
 @admin.register(Zakaz)
 class ZakazAdmin(admin.ModelAdmin):
-    list_display = ('ID', 'ID_TipZakaza', 'ID_User', 'get_tovar_nazvanie', 'Kolichestvo', 'DataZakaza', 'DataDostavki', 'Polucheno', 'ID_Status')
-    search_fields = ('ID_User__email', 'ID_Tovara__Nazvanie')
-    list_filter = ('ID_Status', 'Polucheno')
+    list_display = (
+        'ID', 'ID_TipZakaza', 'ID_User', 'ID_adres', 'Kolichestvo_klon', 'Primechanie',
+        'DataZakaza', 'Peredano_v_bot', 'Data_sborki', 'Dostavka_nado',
+        'Data_peredano_v_dostavku', 'DataDostavki', 'Sobrano', 'Peredano_dostavka',
+        'Zakaz_oplachen', 'Zakaz_dostavlen', 'Zakaz_Poluchen', 'Zakaz_zakryt',
+        'ID_Status_zakaza'
+    )
+    search_fields = ('ID_User__username', 'ID_Status_zakaza__Status', 'ID_adres__Nazvanie_adresa', 'Primechanie')
+    list_filter = ('ID_Status_zakaza', 'Sobrano', 'Peredano_dostavka', 'Dostavka_nado', 'Peredano_v_bot', 'Zakaz_zakryt', 'Zakaz_oplachen', 'Zakaz_Poluchen')
 
-    def get_tovar_nazvanie(self, obj):
-        return obj.ID_Tovara.Nazvanie
-    get_tovar_nazvanie.short_description = 'Tovar'
+    def __str__(self):
+        return f'Order {self.ID} by {self.ID_User.username}'
 
 @admin.register(BaseOtziv)
 class BaseOtzivAdmin(admin.ModelAdmin):
@@ -71,3 +77,15 @@ class CustomUserAdmin(UserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'StatusID', 'telefon', 'tg_Chat_ID', 'tg_User_ID')
     search_fields = ('username', 'email', 'first_name', 'last_name', 'StatusID__Status')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups', 'StatusID')
+
+@admin.register(Otgruzka)
+class OtgruzkaAdmin(admin.ModelAdmin):
+    list_display = ('ID_Zakaz', 'tovar_id', 'quantity', 'cena')
+    search_fields = ('ID_Zakaz__id', 'tovar_id__Nazvanie')
+    list_filter = ('ID_Zakaz', 'tovar_id')
+
+@admin.register(Adresa)
+class AdresaAdmin(admin.ModelAdmin):
+    list_display = ('ID_Zakaz', 'ID_User', 'Gorod', 'adres', 'kontakt', 'telefon', 'adres_ediniy', 'Nazvanie_adresa')
+    search_fields = ('Gorod', 'adres', 'kontakt', 'telefon', 'Nazvanie_adresa')
+    list_filter = ('adres_ediniy', 'Gorod')

@@ -18,7 +18,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from aiogram.types import WebAppInfo
 
-from tg_bot.config import TOKEN, URL_API_GET_KORZINA, URL_API_GET_ZAKAZ
+from tg_bot_manager.config import TOKEN, URL_API_GET_KORZINA, URL_API_GET_ZAKAZ
 import sqlite3
 import aiohttp
 import logging

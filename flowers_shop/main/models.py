@@ -76,20 +76,55 @@ class StatusZakaza(models.Model):
     def __str__(self):
         return self.Status
 
+
+    def __str__(self):
+        return f"Otgruzka {self.ID_Zakaz.id} - {self.tovar_id.Nazvanie}"
+
+class Adresa(models.Model):
+    ID = models.AutoField(primary_key=True)
+    ID_Zakaz = models.IntegerField(null=True, blank=True)
+    ID_User = models.IntegerField(null=True, blank=True)
+    Gorod = models.CharField(max_length=255)
+    adres = models.TextField(blank=True, default="")
+    kontakt = models.CharField(max_length=255, blank=True, default="")
+    telefon = models.CharField(max_length=40, blank=True, default="")
+    adres_ediniy = models.BooleanField(default=False)
+    Nazvanie_adresa = models.CharField(max_length=255, blank=True, default="")
+
+    def __str__(self):
+        return self.Nazvanie_adresa if self.Nazvanie_adresa else f"Adresa {self.id}"
+
 # Заказы
 class Zakaz(models.Model):
     ID = models.AutoField(primary_key=True)
     ID_TipZakaza = models.CharField(max_length=255)
-    ID_User = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)  # Используйте settings.AUTH_USER_MODEL и on_delete=models.PROTECT
-    ID_Tovar = models.ForeignKey(Tovar, on_delete=models.CASCADE)
-    Kolichestvo = models.PositiveIntegerField()
+    ID_User = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    ID_adres = models.ForeignKey(Adresa, on_delete=models.SET_NULL, null=True)
+    Kolichestvo_klon = models.PositiveIntegerField(default=1)
+    Primechanie = models.TextField(max_length=600, blank=True, default="")
     DataZakaza = models.DateTimeField(auto_now_add=True)
+    Peredano_v_bot = models.BooleanField(default=False)
+    Data_sborki = models.DateTimeField(null=True, blank=True)
+    Dostavka_nado = models.BooleanField(default=True)
+    Data_peredano_v_dostavku = models.DateTimeField(null=True, blank=True)
     DataDostavki = models.DateTimeField()
-    Polucheno = models.BooleanField(default=False)
-    ID_Status = models.ForeignKey(StatusZakaza, on_delete=models.CASCADE)
+    Sobrano = models.BooleanField(default=False)
+    Peredano_dostavka = models.BooleanField(default=False)
+    Zakaz_oplachen = models.BooleanField(default=False)
+    Zakaz_dostavlen = models.BooleanField(default=False)
+    Zakaz_Poluchen = models.BooleanField(default=False)
+    Zakaz_zakryt = models.BooleanField(default=False)
+    ID_Status_zakaza = models.ForeignKey(StatusZakaza, on_delete=models.CASCADE,default=1)
 
     def __str__(self):
         return f'Order {self.ID} by {self.ID_User.username}'
+
+class Otgruzka(models.Model):
+    ID = models.AutoField(primary_key=True)
+    ID_Zakaz = models.ForeignKey(Zakaz, on_delete=models.CASCADE)
+    tovar_id = models.ForeignKey(Tovar, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    cena = models.DecimalField(max_digits=10, decimal_places=2)
 
 # Отзывы
 class BaseOtziv(models.Model):

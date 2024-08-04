@@ -1,18 +1,28 @@
+<!-- orders/templates/orders/cart_detail.html -->
 {% extends 'main/base.html' %}
 
 {% block title %}Корзина{% endblock %}
 
 {% block content %}
-    <h2>Корзина</h2>
-    <ul>
-        {% for item in cart_items %}
-            <li>{{ item.tovar.Nazvanie }} - {{ item.quantity }}</li>
-        {% endfor %}
-    </ul>
-    <a href="{% url 'catalog' %}" class="btn btn-primary">Продолжить покупки</a>
-    <a href="{% url 'checkout' %}" class="btn btn-success">Оформить заказ</a>
-    <form method="post" action="{% url 'clear_cart' %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger mt-2">Очистить корзину</button>
-    </form>
+    <h2>Ваша корзина</h2>
+    {% if cart_items %}
+        <ul class="list-group mb-3">
+            {% for item in cart_items %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ item.tovar.Nazvanie }} - {{ item.cena }} руб.
+                    <span class="badge badge-primary badge-pill">{{ item.quantity }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+        <p><strong>Общая сумма: {{ total_price }} руб.</strong></p>  <!-- Общая сумма -->
+        <a href="{% url 'catalog' %}" class="btn btn-primary">Продолжить покупки</a>
+        <a href="{% url 'checkout' %}" class="btn btn-success">Оформить заказ</a>
+        <form method="post" action="{% url 'clear_cart' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger mt-2">Очистить корзину</button>
+        </form>
+    {% else %}
+        <p>Ваша корзина пуста.</p>
+        <a href="{% url 'catalog' %}" class="btn btn-primary">Продолжить покупки</a>
+    {% endif %}
 {% endblock %}

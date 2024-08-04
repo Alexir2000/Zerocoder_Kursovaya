@@ -1,13 +1,32 @@
+<!-- orders/templates/orders/checkout.html -->
 {% extends 'main/base.html' %}
 
 {% block title %}Оформление заказа{% endblock %}
 
 {% block content %}
     <h2>Оформление заказа</h2>
+    <p>Имя пользователя: {{ user_name }}</p>
+    <p>Email: {{ user_email }}</p>
+    <p>Телефон: {{ user_phone }}</p>
+    <p>Дата: {{ current_date }}</p>
+    <p>Время: {{ current_time }}</p>
+
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="btn btn-success">Подтвердить заказ</button>
     </form>
+
+    <h3>Содержимое корзины</h3>
+    <ul class="list-group mb-3">
+        {% for item in cart_items %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ item.tovar.Nazvanie }} - {{ item.cena }} руб.
+                <span class="badge badge-primary badge-pill">{{ item.quantity }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+    <p><strong>Общая сумма: {{ total_price }} руб.</strong></p> <!-- Общая сумма -->
+
     <a href="{% url 'cart_detail' %}" class="btn btn-secondary">Назад в корзину</a>
 {% endblock %}
