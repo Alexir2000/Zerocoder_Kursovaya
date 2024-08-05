@@ -1,0 +1,145 @@
+<!-- flowers_shop/main/templates/main/base_analitics.html -->
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>{% block title %}Flower Shop{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{% static 'main/css/styles.css' %}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <!-- картинка -->
+        <img src="{% static 'main/img/img_footer2.jpg' %}" alt="Logo" style="height: 120px; object-fit: cover;">
+        <a class="navbar-brand" href="{% url 'index' %}">Flower Shop</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'index' %}">Главная</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'catalog' %}">Каталог</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'reviews_list' %}">Отзывы</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'cart_detail' %}">Корзина</a>
+                </li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        {% if user.StatusID_id == 2 %}
+                            <a class="nav-link" href="{% url 'user_kabinet' %}">Личный кабинет</a>
+                        {% elif user.StatusID_id == 3 %}
+                            <a class="nav-link" href="{% url 'manager_kabinet' %}">Личный кабинет</a>
+                        {% endif %}
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <!-- Информация о пользователе -->
+                        {% if user.is_authenticated %}
+                            <li class="nav-item">
+                                <strong>Пользователь:</strong> {{ user.username }}
+                            </li>
+                            <li class="nav-item">
+                                <strong>Статус:</strong> {{ user.StatusID.Status }}
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'logout' %}">Выход</a> <!-- Кнопка выхода -->
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <strong>Пользователь:</strong> не зарегистрирован
+                            </li>
+                            <li class="nav-item">
+                                <strong>Статус:</strong> не определен
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'register' %}">Регистрация</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'login' %}">Вход</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+
+            <main role="main" class="col-md-7 ml-sm-auto col-lg-8 px-4">
+                {% block content %}{% endblock %}
+            </main>
+            <aside class="col-md-2 bg-light" id="cart-sidebar">
+                {% include 'orders/cart_info.html' %}
+            </aside>
+        </div>
+    </div>
+
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container">
+            <span class="text-muted">© 2024 Flower Shop</span>
+        </div>
+    </footer>
+
+    <!-- Кнопка "Вверх" -->
+    <button onclick="topFunction()" id="toTopBtn" title="Вверх">↑</button>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Восстановление позиции прокрутки после перезагрузки страницы
+            if (localStorage.getItem("scrollPosition")) {
+                window.scrollTo(0, localStorage.getItem("scrollPosition"));
+                localStorage.removeItem("scrollPosition");
+            }
+
+            // Сохранение позиции прокрутки при нажатии на любую кнопку с классом "save-scroll"
+            document.querySelectorAll(".save-scroll").forEach(function(button) {
+                button.addEventListener("click", function() {
+                    localStorage.setItem("scrollPosition", window.scrollY);
+                });
+            });
+
+            // Показать кнопку, когда пользователь прокручивает страницу вниз на 20px
+            window.onscroll = function() {
+                scrollFunction();
+            };
+
+            function scrollFunction() {
+                if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                    document.getElementById("toTopBtn").style.display = "block";
+                } else {
+                    document.getElementById("toTopBtn").style.display = "none";
+                }
+            }
+
+            // Возвращение на начало страницы при нажатии на кнопку "Вверх"
+            document.getElementById("toTopBtn").addEventListener("click", function() {
+                document.body.scrollTop = 0; // Для Safari
+                document.documentElement.scrollTop = 0; // Для Chrome, Firefox, IE и Opera
+            });
+        });
+    </script>
+</body>
+</html>

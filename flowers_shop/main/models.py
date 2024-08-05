@@ -104,16 +104,20 @@ class Zakaz(models.Model):
     Primechanie = models.TextField(max_length=600, blank=True, default="")
     DataZakaza = models.DateTimeField(auto_now_add=True)
     Peredano_v_bot = models.BooleanField(default=False)
-    Data_sborki = models.DateTimeField(null=True, blank=True)
     Dostavka_nado = models.BooleanField(default=True)
-    Data_peredano_v_dostavku = models.DateTimeField(null=True, blank=True)
-    DataDostavki = models.DateTimeField()
     Sobrano = models.BooleanField(default=False)
+    Data_sborki = models.DateTimeField(null=True, blank=True, default=None)
     Peredano_dostavka = models.BooleanField(default=False)
+    Data_peredano_v_dostavku = models.DateTimeField(null=True, blank=True, default=None)
     Zakaz_oplachen = models.BooleanField(default=False)
+    Data_Zakaz_oplachen = models.DateTimeField(null=True, blank=True, default=None)
     Zakaz_dostavlen = models.BooleanField(default=False)
+    DataDostavki = models.DateTimeField(null=True, blank=True, default=None)
     Zakaz_Poluchen = models.BooleanField(default=False)
+    Data_Zakaz_Poluchen = models.DateTimeField(null=True, blank=True, default=None)
     Zakaz_zakryt = models.BooleanField(default=False)
+    Data_Zakaz_zakryt = models.DateTimeField(null=True, blank=True, default=None)
+
     ID_Status_zakaza = models.ForeignKey(StatusZakaza, on_delete=models.CASCADE,default=1)
 
     def __str__(self):
@@ -157,5 +161,7 @@ class Zhurnal_status_Zakaza(models.Model):
     Izmenenie = models.CharField(max_length=255)
     pole_izm = models.CharField(max_length=255, blank=True, null=True)
     json_str = models.CharField(max_length=600)
+    Date = models.DateTimeField(null=True, blank=True, default=None)
+    peredano = models.BooleanField(default=False)
     def __str__(self):
         return f"Изменение {self.Izmenenie} для заказа {self.ID_Zakaza.ID}"

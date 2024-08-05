@@ -6,6 +6,10 @@ from main.models import Zakaz, Adresa, Otgruzka
 from django.views.decorators.http import require_POST
 from django.utils.dateparse import parse_date
 from datetime import datetime
+from django.views.decorators.cache import cache_control
+from django.utils import timezone
+import json
+from main.models import Zhurnal_status_Zakaza
 
 def parse_custom_date(date_str):
     """
@@ -25,6 +29,7 @@ def parse_custom_date(date_str):
     return None
 
 @login_required
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def manager_kabinet(request):
     if request.user.StatusID_id != 3:  # Проверка на статус менеджера
         return redirect('index')
@@ -32,7 +37,12 @@ def manager_kabinet(request):
     orders = Zakaz.objects.all().order_by('-DataZakaza')
 
     # Фильтрация заказов по дате
-    filter_date = request.GET.get('filter_date', '')
+    if 'filter_date' in request.GET:
+        filter_date = request.GET['filter_date']
+        request.session['filter_date'] = filter_date
+    else:
+        filter_date = request.session.get('filter_date', '')
+
     if filter_date:
         filter_date = parse_custom_date(filter_date)
         if filter_date:
@@ -40,18 +50,26 @@ def manager_kabinet(request):
             orders = orders.filter(DataZakaza__date=date)
 
     # Фильтрация заказов по статусу
-    filter_status = request.GET.get('filter_status', '')
+    if 'filter_status' in request.GET:
+        filter_status = request.GET['filter_status']
+        request.session['filter_status'] = filter_status
+    else:
+        filter_status = request.session.get('filter_status', '')
+
     if filter_status:
         if filter_status == "sobrano":
-            orders = orders.filter(Sobrano=True)
+            orders = orders.filter(Sobrano=False)
         elif filter_status == "peredano_dostavka":
-            orders = orders.filter(Peredano_dostavka=True)
+            orders = orders.filter(Peredano_dostavka=False)
         elif filter_status == "zakaz_dostavlen":
-            orders = orders.filter(Zakaz_dostavlen=True)
+            orders = orders.filter(Zakaz_dostavlen=False)
         elif filter_status == "zakaz_poluchen":
-            orders = orders.filter(Zakaz_Poluchen=True)
+            orders = orders.filter(Zakaz_Poluchen=False)
         elif filter_status == "zakaz_zakryt":
-            orders = orders.filter(Zakaz_zakryt=True)
+            orders = orders.filter(Zakaz_zakryt=False)
+
+    # Перезагрузка данных заказов
+    orders = list(orders)  # Преобразование QuerySet в список для перезагрузки данных
 
     for order in orders:
         otgruzki = Otgruzka.objects.filter(ID_Zakaz=order)
@@ -67,21 +85,66 @@ def manager_kabinet(request):
 
 @require_POST
 @login_required
-def update_order_status(request):
+def update_order_status(request, order_id):
     if request.user.StatusID_id != 3:  # Проверка на статус менеджера
         return redirect('index')
 
-    orders_data = request.POST.dict()
-    for key in orders_data.keys():
-        if key.startswith('orders[') and key.endswith('][Sobrano]'):
-            order_id = key.split('[')[1].split(']')[0]
-            order = get_object_or_404(Zakaz, ID=order_id)
-            order.Sobrano = 'orders[{}][Sobrano]'.format(order_id) in request.POST
-            order.Peredano_dostavka = 'orders[{}][Peredano_dostavka]'.format(order_id) in request.POST
-            order.Zakaz_dostavlen = 'orders[{}][Zakaz_dostavlen]'.format(order_id) in request.POST
-            order.Zakaz_Poluchen = 'orders[{}][Zakaz_Poluchen]'.format(order_id) in request.POST
-            order.Zakaz_zakryt = 'orders[{}][Zakaz_zakryt]'.format(order_id) in request.POST
-            order.save()
+    # Получение объекта заказа
+    order = get_object_or_404(Zakaz, ID=order_id)
+
+    # Получение новых значений из формы
+    sobrano_value = request.POST.get(f'orders[{order_id}][Sobrano]', 'off') == 'on'
+    peredano_dostavka_value = request.POST.get(f'orders[{order_id}][Peredano_dostavka]', 'off') == 'on'
+    zakaz_dostavlen_value = request.POST.get(f'orders[{order_id}][Zakaz_dostavlen]', 'off') == 'on'
+    zakaz_poluchen_value = request.POST.get(f'orders[{order_id}][Zakaz_Poluchen]', 'off') == 'on'
+    zakaz_zakryt_value = request.POST.get(f'orders[{order_id}][Zakaz_zakryt]', 'off') == 'on'
+
+    current_time = timezone.now()
+
+    def log_change(order, field_name, new_value, description):
+        izmenenie = "Отмечено" if new_value else "Снято"
+        json_data = json.dumps({
+            "ID_Zakaza": order.ID,
+            "Izmenenie": izmenenie,
+            "pole_izm": description,
+            "Date": current_time.strftime("%Y-%m-%d %H:%M:%S")
+        })
+        Zhurnal_status_Zakaza.objects.create(
+            ID_Zakaza=order,
+            Izmenenie=izmenenie,
+            pole_izm=description,
+            json_str=json_data,
+            Date=current_time
+        )
+
+    # Обновление полей заказа и запись в журнал изменений
+    if order.Sobrano != sobrano_value:
+        order.Sobrano = sobrano_value
+        order.Data_sborki = current_time if sobrano_value else None
+        log_change(order, "Sobrano", sobrano_value, "Заказ собран")
+
+    if order.Peredano_dostavka != peredano_dostavka_value:
+        order.Peredano_dostavka = peredano_dostavka_value
+        order.Data_peredano_v_dostavku = current_time if peredano_dostavka_value else None
+        log_change(order, "Peredano_dostavka", peredano_dostavka_value, "Передано в доставку")
+
+    if order.Zakaz_dostavlen != zakaz_dostavlen_value:
+        order.Zakaz_dostavlen = zakaz_dostavlen_value
+        order.DataDostavki = current_time if zakaz_dostavlen_value else None
+        log_change(order, "Zakaz_dostavlen", zakaz_dostavlen_value, "Заказ доставлен")
+
+    if order.Zakaz_Poluchen != zakaz_poluchen_value:
+        order.Zakaz_Poluchen = zakaz_poluchen_value
+        order.Data_Zakaz_Poluchen = current_time if zakaz_poluchen_value else None
+        log_change(order, "Zakaz_Poluchen", zakaz_poluchen_value, "Заказ получен")
+
+    if order.Zakaz_zakryt != zakaz_zakryt_value:
+        order.Zakaz_zakryt = zakaz_zakryt_value
+        order.Data_Zakaz_zakryt = current_time if zakaz_zakryt_value else None
+        log_change(order, "Zakaz_zakryt", zakaz_zakryt_value, "Заказ закрыт")
+
+    # Сохранение заказа
+    order.save()
 
     return redirect('manager_kabinet')
 

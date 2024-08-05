@@ -67,6 +67,7 @@
 │   ├── templates/
 │   │   ├── main/
 │   │   │   ├── base.html
+│   │   │   ├── base_analitics.html
 │   │   │   ├── index.html
 │   │   │   ├── login.html
 │   │   │   ├── password_reset.html
