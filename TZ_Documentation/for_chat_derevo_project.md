@@ -67,6 +67,7 @@
 │   ├── templates/
 │   │   ├── main/
 │   │   │   ├── base.html
+│   │   │   ├── base_analitics.html
 │   │   │   ├── index.html
 │   │   │   ├── login.html
 │   │   │   ├── password_reset.html
@@ -127,7 +128,6 @@
 │   ├── views.py
 │   ├── __init__.py
 ├── scripts/
-│   ├── derevo_project.md
 │   ├── derevo_struct_create.py
 │   ├── for_chat_derevo_project.md
 │   ├── populate_orders.py
