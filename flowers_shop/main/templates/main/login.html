@@ -1,16 +1,14 @@
 <!-- flowers_shop/main/templates/main/login.html -->
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Вход</title>
-</head>
-<body>
+{% extends 'main/base.html' %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
     <h2>Вход</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Войти</button>
+        <button type="submit" class="btn btn-primary">Войти</button>
     </form>
-</body>
-</html>
+{% endblock %}

@@ -5,8 +5,12 @@
 
 {% block content %}
     <h2>Ваша корзина</h2>
-    {% if error_message %}
-        <div class="alert alert-warning">{{ error_message }}</div>
+    {% if messages %}
+        <div>
+            {% for message in messages %}
+                <div class="alert alert-warning">{{ message }}</div>
+            {% endfor %}
+        </div>
     {% endif %}
     {% if cart_items %}
         <ul class="list-group mb-3">
@@ -19,8 +23,16 @@
         </ul>
         <p><strong>Общая сумма: {{ total_price }} руб.</strong></p>  <!-- Общая сумма -->
         <a href="{% url 'catalog' %}" class="btn btn-primary">Продолжить покупки</a>
-        <a href="{% url 'checkout' %}" class="btn btn-success">Оформить заказ</a>
-        <form method="post" action="{% url 'clear_cart' %}">
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'checkout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Оформить заказ</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn btn-success">Войти</a>
+            <a href="{% url 'register' %}" class="btn btn-secondary">Зарегистрироваться</a>
+        {% endif %}
+        <form method="post" action="{% url 'clear_cart' %}" style="display:inline;">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger mt-2">Очистить корзину</button>
         </form>

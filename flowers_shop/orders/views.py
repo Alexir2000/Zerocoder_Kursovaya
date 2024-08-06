@@ -9,19 +9,18 @@ from django.utils.timezone import localtime
 from django.conf import settings
 import datetime
 from main.models import StatusZakaza, Adresa, Zakaz, Otgruzka
-
+from django.contrib import messages
 
 def add_to_cart(request, tovar_id):
     if request.method == "POST":
+        if not request.session.session_key:
+            request.session.create()  # Создание сессии, если её нет
         tovar = get_object_or_404(Tovar, ID=tovar_id)
         quantity = int(request.POST.get('quantity', 1))
         if request.user.is_authenticated:
             cart_item, created = CartItem.objects.get_or_create(tovar=tovar, user=request.user, is_registered=True)
         else:
             session_id = request.session.session_key
-            if not session_id:
-                request.session.create()
-                session_id = request.session.session_key
             cart_item, created = CartItem.objects.get_or_create(tovar=tovar, session_id=session_id, is_registered=False)
 
         if not created:
@@ -32,19 +31,39 @@ def add_to_cart(request, tovar_id):
         cart_item.save()
     return redirect('catalog')
 
+
 def cart_detail(request):
+    if not request.session.session_key:
+        request.session.create()  # Создание сессии, если её нет
     if request.user.is_authenticated:
         cart_items = CartItem.objects.filter(user=request.user, is_registered=True)
     else:
         session_id = request.session.session_key
         cart_items = CartItem.objects.filter(session_id=session_id, is_registered=False)
-    total_price = sum(item.cena * item.quantity for item in cart_items)  # Вычисление общей суммы
+
+    total_price = sum(item.cena * item.quantity for item in cart_items)
     context = {
         'cart_items': cart_items,
         'total_price': total_price,
         'time_work_on': settings.TIME_WORK_ON,
         'time_work_off': settings.TIME_WORK_OFF,
     }
+
+    if request.method == "POST":
+        current_time = localtime()
+        time_work_on = datetime.datetime.strptime(settings.TIME_WORK_ON, "%H:%M:%S").time()
+        time_work_off = datetime.datetime.strptime(settings.TIME_WORK_OFF, "%H:%M:%S").time()
+
+        if current_time.time() < time_work_on or current_time.time() > time_work_off:
+            messages.warning(request, f'Оформление заказов возможно только в рабочее время: с {settings.TIME_WORK_ON} по {settings.TIME_WORK_OFF}.')
+            return redirect('cart_detail')  # Перенаправление на страницу корзины с сообщением об ошибке
+
+        if not request.user.is_authenticated:
+            messages.warning(request, 'Только зарегистрированные пользователи могут оформлять заказ.')
+            return redirect('login')  # Перенаправление на страницу входа
+
+        return redirect('checkout')  # Перенаправление на страницу оформления заказа
+
     return render(request, 'orders/cart_detail.html', context)
 
 
@@ -56,13 +75,8 @@ def checkout(request):
     time_work_off = datetime.datetime.strptime(settings.TIME_WORK_OFF, "%H:%M:%S").time()
 
     if current_time.time() < time_work_on or current_time.time() > time_work_off:
-        return render(request, 'orders/cart_detail.html', {
-            'cart_items': cart_items,
-            'total_price': sum(item.cena * item.quantity for item in cart_items),
-            'time_work_on': settings.TIME_WORK_ON,
-            'time_work_off': settings.TIME_WORK_OFF,
-            'error_message': f'Оформление заказов возможно только в рабочее время: с {settings.TIME_WORK_ON} по {settings.TIME_WORK_OFF}.'
-        })
+        messages.warning(request, f'Оформление заказов возможно только в рабочее время: с {settings.TIME_WORK_ON} по {settings.TIME_WORK_OFF}.')
+        return redirect('cart_detail')
 
     if request.method == 'POST':
         form = OrderForm(request.POST)
@@ -107,12 +121,11 @@ def checkout(request):
         'user_name': request.user.username,
         'user_email': request.user.email,
         'user_phone': request.user.telefon,
-        'current_date': current_time.date(),  # Исправлено здесь
-        'current_time': current_time.time(),  # Исправлено здесь
+        'current_date': current_time.date(),
+        'current_time': current_time.time(),
         'total_price': total_price
     }
     return render(request, 'orders/checkout.html', context)
-
 
 
 @login_required

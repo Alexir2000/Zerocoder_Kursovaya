@@ -15,11 +15,12 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from aiogram.types import WebAppInfo
 
-from tg_bot_manager.config import TOKEN, URL_API_GET_KORZINA, URL_API_GET_ZAKAZ
+from tg_bot_manager.config import TOKEN, URL_API_GET_KORZINA, URL_API_GET_ZAKAZ, URL_API_GET_ZHURNAL_STATUS, URL_API_OK_PUT_ZHURNAL_RESPONSE
 import sqlite3
 import aiohttp
 import logging
 import requests
+from datetime import datetime
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -32,12 +33,13 @@ url_site = "https://www.mebelhit.ru/"
 button_exchange_rates = KeyboardButton(text="Курс валют")
 button_get_korzina = KeyboardButton(text="Получить корзину")
 button_get_zakaz = KeyboardButton(text="Получить заказ")
+button_get_zhurnal_status = KeyboardButton(text="Получить журнал статуса")
 button_start_auto_requests = KeyboardButton(text="Запуск авто-запросов")
 button_stop_auto_requests = KeyboardButton(text="Остановка авто-запросов")
 
 keyboard = ReplyKeyboardMarkup(keyboard=[
     [button_exchange_rates, button_get_korzina],
-    [button_get_zakaz],
+    [button_get_zakaz, button_get_zhurnal_status],
     [button_start_auto_requests, button_stop_auto_requests]
 ], resize_keyboard=True)
 
@@ -46,6 +48,7 @@ auto_request_task = None
 async def auto_request_zakaz():
     while True:
         await fetch_zakaz()
+        await fetch_zhurnal_status()
         await asyncio.sleep(2)
 
 async def fetch_zakaz():
@@ -79,6 +82,34 @@ async def fetch_zakaz():
     except Exception as e:
         logging.error(f"Произошла ошибка при получении данных: {str(e)}")
 
+async def fetch_zhurnal_status():
+    url = URL_API_GET_ZHURNAL_STATUS
+    ok_put_response_url = URL_API_OK_PUT_ZHURNAL_RESPONSE
+    try:
+        response = requests.get(url)
+        data = response.json()
+        if 'error' in data:
+            return
+        date_str = data.get('Date')
+        date_obj = datetime.strptime(date_str, '%d.%m.%Y %H:%M')
+        response_message = (
+            f"Произошло изменение статуса заказа номер {data.get('ID_Zakaza')}. "
+            f"Дата изменения - {date_obj:%d.%m.%Y %H:%M}\n"
+            f"Поле изменения: {data.get('pole_izm')}\n"
+            f"Состояние статуса: {data.get('Izmenenie')}\n"
+
+        )
+        await bot.send_message(chat_id, response_message)
+        confirm_response = requests.post(ok_put_response_url, json={'ID': data['ID']})
+        confirm_data = confirm_response.json()
+        if confirm_data.get('Status') == 'Put_OK':
+            pass # await bot.send_message(chat_id, f"Запись ID {data['ID']} подтверждена.")
+        else:
+            await bot.send_message(chat_id, f"Ошибка подтверждения записи ID {data['ID']}.")
+    except Exception as e:
+        pass  # Обработка исключений без логирования
+
+
 @dp.message(Command(commands=['start']))
 async def start_command(message: Message):
     global chat_id
@@ -104,6 +135,10 @@ async def get_korzina_from_site(message: Message):
 @dp.message(F.text == "Получить заказ")
 async def get_zakaz_from_site(message: Message):
     await fetch_zakaz()
+
+@dp.message(F.text == "Получить журнал статуса")
+async def get_zhurnal_status_from_site(message: Message):
+    await fetch_zhurnal_status()
 
 @dp.message(F.text == "Запуск авто-запросов")
 async def start_auto_requests(message: Message):

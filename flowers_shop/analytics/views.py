@@ -10,6 +10,8 @@ from django.views.decorators.cache import cache_control
 from django.utils import timezone
 import json
 from main.models import Zhurnal_status_Zakaza
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 
 def parse_custom_date(date_str):
     """
@@ -102,20 +104,27 @@ def update_order_status(request, order_id):
     current_time = timezone.now()
 
     def log_change(order, field_name, new_value, description):
-        izmenenie = "Отмечено" if new_value else "Снято"
-        json_data = json.dumps({
-            "ID_Zakaza": order.ID,
-            "Izmenenie": izmenenie,
-            "pole_izm": description,
-            "Date": current_time.strftime("%Y-%m-%d %H:%M:%S")
-        })
-        Zhurnal_status_Zakaza.objects.create(
+        izmenenie = "Выполнено" if new_value else "НЕ выполнено"
+
+        # Создание записи журнала без json_str
+        zhurnal_entry = Zhurnal_status_Zakaza.objects.create(
             ID_Zakaza=order,
             Izmenenie=izmenenie,
             pole_izm=description,
-            json_str=json_data,
             Date=current_time
         )
+
+        # Обновление записи журнала с json_str
+        json_data = json.dumps({
+            "ID": zhurnal_entry.ID,
+            "ID_Zakaza": order.ID,
+            "Izmenenie": izmenenie,
+            "pole_izm": description,
+            "Date": current_time.strftime("%d.%m.%Y %H:%M")
+        })
+
+        zhurnal_entry.json_str = json_data
+        zhurnal_entry.save()
 
     # Обновление полей заказа и запись в журнал изменений
     if order.Sobrano != sobrano_value:
@@ -164,7 +173,19 @@ def zakaz_podrobno(request, order_id):
     }
     return render(request, 'analytics/zakaz_podrobno.html', context)
 
+@login_required
+@csrf_exempt
+def clear_zhurnal(request):
+    if request.user.StatusID_id != 3:  # Проверка на статус менеджера
+        return redirect('index')
 
+    if request.method == "POST":
+        # Удаление всех записей из Zhurnal_status_Zakaza
+        Zhurnal_status_Zakaza.objects.all().delete()
+        messages.success(request, 'Журнал успешно очищен.')
+        return redirect('clear_zhurnal')
+
+    return render(request, 'analytics/clear_zhurnal.html')
 
 
 # def analytics_view(request):

@@ -9,8 +9,17 @@ from .forms import CustomUserCreationForm
 from .models import Adresa, Otgruzka, Zakaz
 from orders.models import CartItem
 
+def link_cart_to_user(session_id, user):
+    if session_id:
+        cart_items = CartItem.objects.filter(session_id=session_id, is_registered=False)
+        for item in cart_items:
+            item.user = user
+            item.is_registered = True
+            item.save()
+
 
 def register(request):
+    session_id = request.session.session_key
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -19,7 +28,8 @@ def register(request):
             password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=password)
             login(request, user)
-            return redirect('index')  # Перенаправить на главную страницу после регистрации
+            link_cart_to_user(session_id, user)
+            return redirect('index')
     else:
         form = CustomUserCreationForm()
     return render(request, 'main/register.html', {'form': form})
@@ -27,6 +37,12 @@ def register(request):
 class CustomLoginView(LoginView):
     template_name = 'main/login.html'
     next_page = 'index'  # Перенаправление на главную страницу после успешного входа
+
+    def form_valid(self, form):
+        session_id = self.request.session.session_key
+        response = super().form_valid(form)
+        link_cart_to_user(session_id, self.request.user)
+        return response
 
 def index(request):
     return render(request, 'main/index.html')

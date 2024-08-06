@@ -1,0 +1,18 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Очистка Журнала{% endblock %}
+
+{% block content %}
+    <h2>Очистка Журнала</h2>
+    {% if messages %}
+        <div class="alert alert-success" role="alert">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    <form method="post" action="{% url 'clear_zhurnal' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Очистить журнал</button>
+    </form>
+{% endblock %}

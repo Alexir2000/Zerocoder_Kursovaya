@@ -91,7 +91,9 @@ class AdresaAdmin(admin.ModelAdmin):
     list_filter = ('adres_ediniy', 'Gorod')
 
 @admin.register(Zhurnal_status_Zakaza)
-class ZhurnalStatusZakazaAdmin(admin.ModelAdmin):
-    list_display = ('ID', 'ID_Zakaza', 'Izmenenie', 'pole_izm', 'json_str')
-    search_fields = ('ID_Zakaza__ID', 'Izmenenie', 'pole_izm', 'json_str')
-    list_filter = ('ID_Zakaza', 'Izmenenie')
+class Zhurnal_status_ZakazaAdmin(admin.ModelAdmin):
+    list_display = ('ID', 'ID_Zakaza', 'Izmenenie', 'pole_izm', 'Date', 'peredano')
+    search_fields = ('ID_Zakaza__ID', 'Izmenenie')
+    list_filter = ('peredano', 'Date')
+    ordering = ('-Date',)
+    date_hierarchy = 'Date'
