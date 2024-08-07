@@ -1,10 +1,34 @@
+<!-- analytics/templates/analytics/analytics.html -->
 {% extends 'main/base.html' %}
 
-{% block title %}Аналитика и отчеты {% endblock %}
+{% block title %}Аналитика и отчеты{% endblock %}
 
 {% block content %}
-
     <h2>Аналитика и отчеты</h2>
+
+    <!-- Кнопка возврата в кабинет менеджера -->
+    <a href="{% url 'manager_kabinet' %}" class="btn btn-secondary mb-4">Вернуться в кабинет менеджера</a>
+
+    <!-- Форма для ввода дат -->
+    <form method="get" action="{% url 'analytics_view' %}" class="form-inline mb-4">
+        <div class="form-group mx-sm-3 mb-2">
+            <label for="start_date" class="sr-only">Дата начала</label>
+            <input type="text" id="start_date" name="start_date" class="form-control" placeholder="Дата начала (дд.мм.гггг)" value="{{ start_date }}">
+        </div>
+        <div class="form-group mx-sm-3 mb-2">
+            <label for="end_date" class="sr-only">Дата конца</label>
+            <input type="text" id="end_date" name="end_date" class="form-control" placeholder="Дата конца (дд.мм.гггг)" value="{{ end_date }}">
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Показать аналитику</button>
+    </form>
+
+    <!-- Отображение аналитики -->
+    <h3>Общая сумма заказов: {{ total_sum }} руб.</h3>
+    <h3>Общее количество заказов: {{ total_orders }}</h3>
+    <h3>Общая сумма затрат: {{ total_rashod }} руб.</h3>
+    <h3>Общая сумма прибыли: {{ total_profit }} руб.</h3>
+    <h3>Средний чек: {{ average_order_value }} руб.</h3>
+
     <ul>
         {% for report in reports %}
             <li>Отчет за {{ report.Data }} - Заказ №{{ report.ID_Zakaz.ID }} - Итог: {{ report.Itogo }} руб. - Расход: {{ report.Rashod }} руб. - Доход: {{ report.Dohod }} руб. - Рентабельность: {{ report.Retab }}%</li>

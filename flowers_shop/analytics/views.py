@@ -12,6 +12,11 @@ import json
 from main.models import Zhurnal_status_Zakaza
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+from main.models import Otchet, Zakaz, Otgruzka
+from django.db.models import Sum, F
+from decimal import Decimal
+
+
 
 def parse_custom_date(date_str):
     """
@@ -188,6 +193,75 @@ def clear_zhurnal(request):
     return render(request, 'analytics/clear_zhurnal.html')
 
 
-# def analytics_view(request):
-#     reports = Otchet.objects.all()
-#     return render(request, 'analytics/analytics.html', {'reports': reports})
+def calculate_analytics(start_date, end_date):
+    orders = Zakaz.objects.filter(DataZakaza__range=[start_date, end_date])
+
+    total_sum = Decimal(0)
+    total_rashod = Decimal(0)
+    total_profit = Decimal(0)
+    total_orders = orders.count()
+
+    for order in orders:
+        otgruzki = Otgruzka.objects.filter(ID_Zakaz=order)
+        order_total_price = sum(item.cena * item.quantity for item in otgruzki)
+        order.Rashod = order.Rashod or Decimal(0)  # Убедитесь, что Rashod не None
+        order.Profit = order_total_price - order.Rashod
+        order.save()
+
+        total_sum += order_total_price
+        total_rashod += order.Rashod
+        total_profit += order.Profit
+
+    average_order_value = total_sum / total_orders if total_orders > 0 else Decimal(0)
+
+    analytics_data = {
+        'total_sum': float(total_sum),  # Общая сумма заказов
+        'total_orders': total_orders,  # Общее количество заказов
+        'total_rashod': float(total_rashod),  # Общая сумма затрат по заказам
+        'total_profit': float(total_profit),  # Общая сумма прибыли по заказам
+        'average_order_value': float(average_order_value),  # Средний чек
+        'date_s': start_date.strftime("%d.%m.%Y"),  # Дата начала периода
+        'date_po': end_date.strftime("%d.%m.%Y")  # Дата конца периода
+    }
+
+    return json.dumps(analytics_data)
+
+
+
+
+
+@login_required
+def analytics_view(request):
+    if request.user.StatusID_id != 3:  # Проверка на статус менеджера
+        return redirect('index')
+
+    start_date = request.GET.get('start_date', datetime.now().strftime("%d.%m.%Y"))
+    end_date = request.GET.get('end_date', datetime.now().strftime("%d.%m.%Y"))
+
+    start_date = parse_custom_date(start_date)
+    end_date = parse_custom_date(end_date)
+
+    if start_date:
+        start_date = datetime.strptime(start_date, "%d.%m.%Y")
+    if end_date:
+        end_date = datetime.strptime(end_date, "%d.%m.%Y")
+
+    analytics_json = calculate_analytics(start_date, end_date)
+    analytics_data = json.loads(analytics_json)
+
+    reports = Otchet.objects.all()
+    context = {
+        'reports': reports,
+        'start_date': start_date.strftime("%d.%m.%Y"),
+        'end_date': end_date.strftime("%d.%m.%Y"),
+        'total_sum': analytics_data['total_sum'],
+        'total_orders': analytics_data['total_orders'],
+        'total_rashod': analytics_data['total_rashod'],
+        'total_profit': analytics_data['total_profit'],
+        'average_order_value': analytics_data['average_order_value'],
+    }
+    return render(request, 'analytics/analytics.html', context)
+
+
+
+

@@ -45,7 +45,20 @@ class CustomLoginView(LoginView):
         return response
 
 def index(request):
-    return render(request, 'main/index.html')
+    session_id = request.session.session_key
+    if not session_id:
+        request.session.save()
+        session_id = request.session.session_key
+
+    if request.user.is_authenticated:
+        cart_items = CartItem.objects.filter(user=request.user, is_registered=True)
+    else:
+        cart_items = CartItem.objects.filter(session_id=session_id, is_registered=False)
+
+    context = {
+        'cart_items': cart_items,
+    }
+    return render(request, 'main/index.html', context)
 
 def custom_logout_view(request):
     logout(request)

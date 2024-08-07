@@ -8,6 +8,9 @@
         <h2 class="mb-4">Кабинет менеджера</h2>
         <h3 class="mb-3">Заказы</h3>
 
+        <!-- Ссылка на страницу аналитики -->
+        <a href="{% url 'analytics_view' %}" class="btn btn-info mb-4">Перейти к аналитике</a>
+
         <form method="get" action="{% url 'manager_kabinet' %}" class="form-inline mb-4">
             <div class="form-group mx-sm-3 mb-2">
                 <input type="text" name="filter_date" class="form-control" placeholder="Дата заказа (дд.мм.гггг)" value="{{ filter_date }}">

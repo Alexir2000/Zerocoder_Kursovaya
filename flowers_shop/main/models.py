@@ -1,3 +1,5 @@
+# flowers_shop/main/models.py
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
@@ -64,6 +66,7 @@ class Tovar(models.Model):
     Opisanie = models.TextField()
     ID_TipTovara = models.ForeignKey(Tip_Tovara, on_delete=models.CASCADE)
     ID_KategorTovara = models.ForeignKey(Kat_Tovara, on_delete=models.CASCADE)
+    kolich_otzyv = models.IntegerField(default=0)
 
     def __str__(self):
         return self.Nazvanie
@@ -117,8 +120,9 @@ class Zakaz(models.Model):
     Data_Zakaz_Poluchen = models.DateTimeField(null=True, blank=True, default=None)
     Zakaz_zakryt = models.BooleanField(default=False)
     Data_Zakaz_zakryt = models.DateTimeField(null=True, blank=True, default=None)
-
-    ID_Status_zakaza = models.ForeignKey(StatusZakaza, on_delete=models.CASCADE,default=1)
+    Rashod = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Новое поле
+    Profit = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Новое поле
+    ID_Status_zakaza = models.ForeignKey(StatusZakaza, on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return f'Order {self.ID} by {self.ID_User.username}'
