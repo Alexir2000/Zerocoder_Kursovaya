@@ -18,6 +18,7 @@
 │   ├── templates/
 │   │   ├── analytics/
 │   │   │   ├── analytics.html
+│   │   │   ├── clear_zhurnal.html
 │   │   │   ├── manager_kabinet.html
 │   │   │   ├── zakaz_podrobno.html
 │   ├── tests.py
@@ -128,6 +129,7 @@
 │   ├── views.py
 │   ├── __init__.py
 ├── scripts/
+│   ├── Clear_base_zhurnal.py
 │   ├── derevo_struct_create.py
 │   ├── for_chat_derevo_project.md
 │   ├── populate_orders.py

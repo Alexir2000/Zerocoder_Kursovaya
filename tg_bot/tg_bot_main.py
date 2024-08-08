@@ -1,8 +1,5 @@
 import sqlite3
 import random
-from sqlalchemy import create_engine, Column, Integer, String, Float
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from aiogram.types import Message
 import asyncio
 from aiogram import Bot, Dispatcher, F
@@ -15,7 +12,8 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from aiogram.types import WebAppInfo
 
-from tg_bot_manager.config import TOKEN, URL_API_GET_KORZINA, URL_API_GET_ZAKAZ, URL_API_GET_ZHURNAL_STATUS, URL_API_OK_PUT_ZHURNAL_RESPONSE
+from tg_bot_manager.config import (TOKEN, URL_API_GET_ZAKAZ, URL_API_OK_PUT_RESPONSE,
+                                   URL_API_GET_ZHURNAL_STATUS, URL_API_OK_PUT_ZHURNAL_RESPONSE)
 import sqlite3
 import aiohttp
 import logging
@@ -27,18 +25,14 @@ dp = Dispatcher()
 
 logging.basicConfig(level=logging.INFO)
 
-url_site = "https://localhost:8000/catalog/"
-url_site = "https://www.mebelhit.ru/"
-
 button_exchange_rates = KeyboardButton(text="Курс валют")
-button_get_korzina = KeyboardButton(text="Получить корзину")
 button_get_zakaz = KeyboardButton(text="Получить заказ")
 button_get_zhurnal_status = KeyboardButton(text="Получить журнал статуса")
 button_start_auto_requests = KeyboardButton(text="Запуск авто-запросов")
 button_stop_auto_requests = KeyboardButton(text="Остановка авто-запросов")
 
 keyboard = ReplyKeyboardMarkup(keyboard=[
-    [button_exchange_rates, button_get_korzina],
+    [button_exchange_rates],
     [button_get_zakaz, button_get_zhurnal_status],
     [button_start_auto_requests, button_stop_auto_requests]
 ], resize_keyboard=True)
@@ -53,7 +47,7 @@ async def auto_request_zakaz():
 
 async def fetch_zakaz():
     url = URL_API_GET_ZAKAZ
-    ok_put_response_url = "http://127.0.0.1:8000/catalog/Ok_put_response"
+    ok_put_response_url = URL_API_OK_PUT_RESPONSE
     try:
         response = requests.get(url)
         data = response.json()
@@ -121,16 +115,7 @@ async def help_command(message: Message):
     await message.answer("Тут помощь. Есть такие команды: \n "
                          "/del_registr - удалить регистрацию \n ")
 
-@dp.message(F.text == "Получить корзину")
-async def get_korzina_from_site(message: Message):
-    url = URL_API_GET_KORZINA
-    try:
-        response = requests.get(url)
-        data = response.json()
-        response_message = "\n".join([f"Товар: {item['tovar']}, Количество: {item['quantity']}" for item in data])
-        await message.answer(response_message)
-    except:
-        await message.answer("Не удалось получить данные.")
+
 
 @dp.message(F.text == "Получить заказ")
 async def get_zakaz_from_site(message: Message):
