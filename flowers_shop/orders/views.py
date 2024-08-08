@@ -4,12 +4,14 @@ from .models import CartItem
 from main.models import Tovar
 from .forms import OrderForm
 from django.utils import timezone
+from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import localtime
 from django.conf import settings
 import datetime
 from main.models import StatusZakaza, Adresa, Zakaz, Otgruzka
 from django.contrib import messages
+
 
 def add_to_cart(request, tovar_id):
     if request.method == "POST":
@@ -18,18 +20,35 @@ def add_to_cart(request, tovar_id):
         tovar = get_object_or_404(Tovar, ID=tovar_id)
         quantity = int(request.POST.get('quantity', 1))
         if request.user.is_authenticated:
-            cart_item, created = CartItem.objects.get_or_create(tovar=tovar, user=request.user, is_registered=True)
+            cart_items = CartItem.objects.filter(tovar=tovar, user=request.user, is_registered=True)
         else:
             session_id = request.session.session_key
-            cart_item, created = CartItem.objects.get_or_create(tovar=tovar, session_id=session_id, is_registered=False)
+            cart_items = CartItem.objects.filter(tovar=tovar, session_id=session_id, is_registered=False)
 
-        if not created:
+        if cart_items.exists():
+            cart_item = cart_items.first()
             cart_item.quantity += quantity
+            for item in cart_items[1:]:
+                cart_item.quantity += item.quantity
+                item.delete()
         else:
-            cart_item.quantity = quantity
-            cart_item.cena = tovar.Cena  # Сохранить цену товара при добавлении
+            cart_item = CartItem(
+                tovar=tovar,
+                quantity=quantity,
+                cena=tovar.Cena
+            )
+            if request.user.is_authenticated:
+                cart_item.user = request.user
+                cart_item.is_registered = True
+            else:
+                cart_item.session_id = session_id
+                cart_item.is_registered = False
+
         cart_item.save()
-    return redirect('catalog')
+
+        next_url = request.POST.get('next', 'catalog')
+        return HttpResponseRedirect(next_url)
+
 
 
 def cart_detail(request):

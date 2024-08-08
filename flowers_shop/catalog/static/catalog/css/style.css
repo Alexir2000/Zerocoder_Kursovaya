@@ -1,0 +1,20 @@
+.card-img-top-container {
+    height: 100px; /* Фиксированная высота для всех изображений */
+    overflow: hidden; /* Обрезка лишнего содержимого */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-img-top {
+    height: 100%;
+    object-fit: cover; /* Обрезка изображения, чтобы оно не масштабировалось */
+}
+
+.description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Количество строк */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

@@ -1,0 +1,41 @@
+{% extends 'main/base.html' %}
+{% block title %}Отзывы о {{ tovar.Nazvanie }}{% endblock %}
+
+{% block content %}
+    <div class="card p-4">
+        <img src="{{ tovar.Img_url }}" alt="{{ tovar.Nazvanie }}" class="img-fluid mb-4">
+        <h2 class="mt-4">{{ tovar.Nazvanie }}</h2>
+        <p>{{ tovar.Opisanie }}</p>
+        <p>Тип товара: {{ tovar.ID_TipTovara.Tip }}</p>
+        <p>Категория товара: {{ tovar.ID_KategorTovara.Kategoriya }}</p>
+        <p><strong>Цена: {{ tovar.Cena }} руб.</strong></p>
+        <p>Рейтинг: {{ tovar.Reiting }}</p>
+        <p>Количество отзывов: {{ tovar.kolich_otzyv }}</p>
+        <div class="d-flex mb-4">
+            <a href="{% url 'catalog' %}" class="btn btn-primary mr-2">Вернуться в каталог</a>
+            <a href="{% url 'karta_tovara' tovar.ID %}" class="btn btn-info">Назад к товару</a>
+        </div>
+    </div>
+
+    <div class="card p-4 mt-4">
+        {% if user_review_exists %}
+            <p class="text-warning"><strong>Отзыв уже был оставлен ранее.</strong></p>
+        {% else %}
+            <h3>Добавить отзыв</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_reiting">Рейтинг</label>
+                    <input type="number" name="reiting" class="form-control" id="id_reiting" min="1" max="5" required style="width: 15ch;" value="5">
+                </div>
+                <div class="form-group">
+                    <label for="id_otzyv">Отзыв</label>
+                    <textarea name="otzyv" class="form-control" id="id_otzyv" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Добавить отзыв</button>
+            </form>
+        {% endif %}
+    </div>
+
+    {% include 'catalog/reviews_list.html' %}
+{% endblock %}

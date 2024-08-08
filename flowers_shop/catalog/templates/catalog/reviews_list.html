@@ -1,0 +1,15 @@
+<div class="card p-4 mt-4">
+    <h3>Отзывы</h3>
+    {% if otzyvy %}
+        {% for otzyv in otzyvy %}
+            <div class="border p-2 mb-2">
+                <p><strong>Пользователь:</strong> {{ otzyv.ID_User.username }}</p>
+                <p><strong>Рейтинг:</strong> {{ otzyv.ReitingTovara }}</p>
+                <p>{{ otzyv.Otziv }}</p>
+                <p><small>{{ otzyv.date_created }}</small></p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Отзывов пока нет.</p>
+    {% endif %}
+</div>

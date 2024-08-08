@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from main.models import Zakaz, Adresa, Otgruzka
 from django.views.decorators.http import require_POST
 from django.utils.dateparse import parse_date
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.views.decorators.cache import cache_control
 from django.utils import timezone
 import json
@@ -15,6 +15,7 @@ from django.contrib import messages
 from main.models import Otchet, Zakaz, Otgruzka
 from django.db.models import Sum, F
 from decimal import Decimal
+from django.http import JsonResponse
 
 
 
@@ -194,7 +195,10 @@ def clear_zhurnal(request):
 
 
 def calculate_analytics(start_date, end_date):
-    orders = Zakaz.objects.filter(DataZakaza__range=[start_date, end_date])
+    # Увеличиваем end_date на один день для корректного включения в фильтр
+    end_date_filter = end_date + timedelta(days=1)
+
+    orders = Zakaz.objects.filter(DataZakaza__range=[start_date, end_date_filter])
 
     total_sum = Decimal(0)
     total_rashod = Decimal(0)
@@ -225,7 +229,6 @@ def calculate_analytics(start_date, end_date):
     }
 
     return json.dumps(analytics_data)
-
 
 
 
@@ -262,6 +265,27 @@ def analytics_view(request):
     }
     return render(request, 'analytics/analytics.html', context)
 
+# API для передачи данных в Бот по запросу
+@csrf_exempt
+def put_analytics(request):
+    if request.method == "GET":
+        try:
+            start_date_str = request.GET.get('start_date')
+            end_date_str = request.GET.get('end_date')
 
+            if not start_date_str or not end_date_str:
+                return JsonResponse({'error': 'Некорректные даты'}, status=400)
+
+            start_date = datetime.strptime(start_date_str, "%d.%m.%Y")
+            end_date = datetime.strptime(end_date_str, "%d.%m.%Y")
+
+            analytics_json = calculate_analytics(start_date, end_date)
+            analytics_data = json.loads(analytics_json)
+
+            return JsonResponse(analytics_data, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Недопустимый метод'}, status=405)
 
 

@@ -1,43 +1,98 @@
-import sqlite3
-import random
-from aiogram.types import Message
-import asyncio
-from aiogram import Bot, Dispatcher, F
-from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, FSInputFile
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
-from aiogram.types import WebAppInfo
+# tg_bot/tg_bot_main.py
 
-from tg_bot_manager.config import (TOKEN, URL_API_GET_ZAKAZ, URL_API_OK_PUT_RESPONSE,
-                                   URL_API_GET_ZHURNAL_STATUS, URL_API_OK_PUT_ZHURNAL_RESPONSE)
-import sqlite3
-import aiohttp
 import logging
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
+import asyncio
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters import Command
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from tg_bot_manager.config import (TOKEN, URL_API_GET_ZAKAZ, URL_API_OK_PUT_RESPONSE,
+                                   URL_API_GET_ZHURNAL_STATUS, URL_API_OK_PUT_ZHURNAL_RESPONSE,
+                                   URL_API_GET_ANALITICS)
+
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 logging.basicConfig(level=logging.INFO)
 
-button_exchange_rates = KeyboardButton(text="Курс валют")
 button_get_zakaz = KeyboardButton(text="Получить заказ")
-button_get_zhurnal_status = KeyboardButton(text="Получить журнал статуса")
+button_get_zhurnal_status = KeyboardButton(text="Получить статус заказов")
 button_start_auto_requests = KeyboardButton(text="Запуск авто-запросов")
 button_stop_auto_requests = KeyboardButton(text="Остановка авто-запросов")
+button_get_analytics = KeyboardButton(text="Получить аналитику")
+button_set_analytics_period = KeyboardButton(text="Ввод периода аналитики")
+
 
 keyboard = ReplyKeyboardMarkup(keyboard=[
-    [button_exchange_rates],
     [button_get_zakaz, button_get_zhurnal_status],
-    [button_start_auto_requests, button_stop_auto_requests]
+    [button_start_auto_requests, button_stop_auto_requests],
+    [button_get_analytics, button_set_analytics_period]
 ], resize_keyboard=True)
 
 auto_request_task = None
+
+start_date = (datetime.now() - timedelta(days=7)).strftime("%d.%m.%Y")
+end_date = datetime.now().strftime("%d.%m.%Y")
+
+# Создайте класс состояния для ввода дат
+class AnalyticsPeriod(StatesGroup):
+    waiting_for_start_date = State()
+    waiting_for_end_date = State()
+
+storage = MemoryStorage()
+dp = Dispatcher(storage=storage)
+
+def parse_custom_date(date_str):
+    """
+    Парсит дату из строки в различных форматах (дд.мм.гггг, дд/мм/гггг, дд.мм, дд/мм)
+    и возвращает дату в формате дд.мм.гггг.
+    """
+    current_year = datetime.now().year
+    formats = ["%d.%m.%Y", "%d/%m/%Y", "%d.%m", "%d/%m"]
+    for fmt in formats:
+        try:
+            date = datetime.strptime(date_str, fmt)
+            if fmt in ["%d.%m", "%d/%m"]:
+                date = date.replace(year=current_year)
+            return date.strftime("%d.%m.%Y")
+        except ValueError:
+            continue
+    return None
+
+# Функция для получения аналитики
+async def get_analytics(message: Message):
+    url = URL_API_GET_ANALITICS
+    global start_date, end_date
+    if not start_date or not end_date:
+        await message.answer("Период аналитики не установлен. Пожалуйста, используйте команду 'Ввод периода аналитики' для установки периода.")
+        return
+
+    try:
+        response = requests.get(url, params={'start_date': start_date, 'end_date': end_date})
+        data = response.json()
+        if 'error' in data:
+            await message.answer("Ошибка получения аналитики")
+            return
+
+        response_message = (
+            f"Период с {data['date_s']} по {data['date_po']}:\n"
+            f"Общая сумма заказов: {data['total_sum']} руб.\n"
+            f"Общее количество заказов: {data['total_orders']}\n"
+            f"Общая сумма затрат: {data['total_rashod']} руб.\n"
+            f"Общая сумма прибыли: {data['total_profit']} руб.\n"
+            f"Средний чек: {data['average_order_value']} руб."
+        )
+        await message.answer(response_message)
+    except Exception as e:
+        logging.error(f"Произошла ошибка при получении данных: {str(e)}")
+        await message.answer("Произошла ошибка при получении аналитики")
+
 
 async def auto_request_zakaz():
     while True:
@@ -76,6 +131,7 @@ async def fetch_zakaz():
     except Exception as e:
         logging.error(f"Произошла ошибка при получении данных: {str(e)}")
 
+# Проверка журнала  на обновление статусов заказов
 async def fetch_zhurnal_status():
     url = URL_API_GET_ZHURNAL_STATUS
     ok_put_response_url = URL_API_OK_PUT_ZHURNAL_RESPONSE
@@ -104,6 +160,50 @@ async def fetch_zhurnal_status():
         pass  # Обработка исключений без логирования
 
 
+
+@dp.message(F.text == "Ввод периода аналитики")
+async def set_analytics_period(message: Message, state: FSMContext):
+    await message.answer("Введите дату окончания периода в формате дд.мм.гггг или дд/мм/гггг или дд.мм или дд/мм")
+    await state.set_state(AnalyticsPeriod.waiting_for_start_date)
+
+@dp.message(AnalyticsPeriod.waiting_for_start_date)
+async def process_start_date(message: Message, state: FSMContext):
+    global start_date
+    parsed_date = parse_custom_date(message.text)
+    if parsed_date:
+        start_date = parsed_date
+        await message.answer("Введите дату окончания периода в формате дд.мм.гггг или дд/мм/гггг или дд.мм или дд/мм")
+        await state.set_state(AnalyticsPeriod.waiting_for_end_date)
+    else:
+        await message.answer("Неправильный формат даты. Введите дату в формате дд.мм.гггг, дд/мм/гггг, дд.мм или дд/мм")
+
+
+@dp.message(AnalyticsPeriod.waiting_for_end_date)
+async def process_end_date(message: Message, state: FSMContext):
+    global end_date
+    parsed_end_date = parse_custom_date(message.text)
+    if parsed_end_date:
+        end_date = parsed_end_date
+    else:
+        end_date = start_date
+        await message.answer(f"Дата окончания введена некорректно и была приравнена к дате начала: {start_date}",
+                             reply_markup=keyboard)
+
+    start_date_dt = datetime.strptime(start_date, "%d.%m.%Y")
+    end_date_dt = datetime.strptime(end_date, "%d.%m.%Y")
+    if end_date_dt < start_date_dt:
+        end_date = start_date
+        await message.answer(f"Дата окончания введена некорректно и была приравнена к дате начала: {start_date}",
+                             reply_markup=keyboard)
+
+    await message.answer(f"Период аналитики установлен с {start_date} по {end_date}", reply_markup=keyboard)
+    await state.clear()
+
+
+@dp.message(F.text == "Получить аналитику")
+async def get_analytics_command(message: Message):
+    await get_analytics(message)
+
 @dp.message(Command(commands=['start']))
 async def start_command(message: Message):
     global chat_id
@@ -114,8 +214,6 @@ async def start_command(message: Message):
 async def help_command(message: Message):
     await message.answer("Тут помощь. Есть такие команды: \n "
                          "/del_registr - удалить регистрацию \n ")
-
-
 
 @dp.message(F.text == "Получить заказ")
 async def get_zakaz_from_site(message: Message):
@@ -144,26 +242,7 @@ async def stop_auto_requests(message: Message):
     else:
         await message.answer("Автоматические запросы не запущены.")
 
-@dp.message(F.text == "Курс валют")
-async def exchange_rates(message: Message):
-    url = "https://v6.exchangerate-api.com/v6/e0fc67b410005d2ae9827b83/latest/USD"
-    try:
-        response = requests.get(url)
-        data = response.json()
-        if response.status_code != 200:
-            await message.answer("Не удалось получить данные о курсе валют!")
-            return
-        usd_to_rub = data['conversion_rates']['RUB']
-        eur_to_usd = data['conversion_rates']['EUR']
-        euro_to_rub = eur_to_usd * usd_to_rub
-        await message.answer(f"1 USD - {usd_to_rub:.2f}  RUB\n"
-                             f"1 EUR - {euro_to_rub:.2f}  RUB")
-    except:
-        await message.answer("Произошла ошибка")
-
 # ++++++++++++++++++++++++++++=================++++++++++++++++++++++
-
-# init_db_bot() # единовременный запуск создания базы. потом комментируем
 
 async def main():
     await dp.start_polling(bot)
@@ -171,4 +250,3 @@ async def main():
 if __name__ == '__main__':
     asyncio.run(main())
 
-# print_db() # функция печати содержимого базы для проверки.

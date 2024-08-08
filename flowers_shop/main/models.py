@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
+
 # Статусы доступа пользователей
 class StatusDostupa(models.Model):
     ID = models.AutoField(primary_key=True)
@@ -137,13 +138,16 @@ class Otgruzka(models.Model):
 # Отзывы
 class BaseOtziv(models.Model):
     ID = models.AutoField(primary_key=True)
-    ID_User = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Изменено с PROTECT на CASCADE
+    ID_User = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     ID_Tovar = models.ForeignKey(Tovar, on_delete=models.CASCADE)
     Otziv = models.CharField(max_length=500)
     ReitingTovara = models.PositiveIntegerField(choices=[(i, i) for i in range(1, 6)])
+    date_created =  models.DateTimeField(null=True, blank=True, default=None)
 
     def __str__(self):
-        return f'Review by {self.ID_User.email} for {self.ID_Tovar.Nazvanie}'
+        user_identifier = self.ID_User.email if self.ID_User.email else f"User ID: {self.ID_User.id}"
+        return f'Review by {user_identifier} for {self.ID_Tovar.Nazvanie}'
+
 
 # Отчеты
 class Otchet(models.Model):
