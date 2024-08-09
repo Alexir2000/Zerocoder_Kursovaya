@@ -172,7 +172,7 @@ async def process_start_date(message: Message, state: FSMContext):
     parsed_date = parse_custom_date(message.text)
     if parsed_date:
         start_date = parsed_date
-        await message.answer("Введите дату окончания периода в формате дд.мм.гггг или дд/мм/гггг или дд.мм или дд/мм")
+        await message.answer("Введите дату Начала периода в формате дд.мм.гггг или дд/мм/гггг или дд.мм или дд/мм")
         await state.set_state(AnalyticsPeriod.waiting_for_end_date)
     else:
         await message.answer("Неправильный формат даты. Введите дату в формате дд.мм.гггг, дд/мм/гггг, дд.мм или дд/мм")
