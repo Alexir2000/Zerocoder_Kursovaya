@@ -32,14 +32,18 @@
 
 1. **Клонируйте репозиторий**:
    git clone https://github.com/Alexir2000/Zerocoder_Kursovaya
-   cd flowers_shop
-
+   
 2. **Создайте виртуальное окружение**:
    python3 -m venv venv
 source venv/bin/activate  # для Windows: venv\Scripts\activate
 
 3. **Установите зависимости**:
    pip install -r requirements.txt
+
+4. **Загрузка актуальных файлов конфигурации и базы данных**:
+   - Скачайте актуальные файлы `config.py` и `db.sqlite3` из облака по [этой ссылке](https://disk.yandex.ru/d/o0Cdw7thEwBfgg).
+   - Поместите файл `config.py` в папку `/tg_bot/tg_bot_manager/`
+   - Поместите файл db.sqlite3 в корневую папку проекта flowers_shop/
 
 4. **Выполните миграции базы данных**:
    python manage.py migrate
@@ -86,13 +90,9 @@ login Manager1 password 123
    - Проверьте все остальные параметры конфигурации в файлах `settings.py` и `config.py` на соответствие вашему окружению и измените их при необходимости.
 
 4. **Загрузка актуальных файлов конфигурации и базы данных**:
-
    - Скачайте актуальные файлы `config.py` и `db.sqlite3` из облака по [этой ссылке](https://disk.yandex.ru/d/o0Cdw7thEwBfgg).
-   
    - Поместите файл `config.py` в папку `/tg_bot/tg_bot_manager/`
    - Поместите файл db.sqlite3 в корневую папку проекта flowers_shop/
-
-
 
 ## Архитектура проекта
 
