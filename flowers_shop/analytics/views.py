@@ -15,8 +15,7 @@ from decimal import Decimal
 from django.http import JsonResponse
 from django.http import HttpResponseForbidden
 from main.models import Tovar
-from .forms import TovarForm
-
+from .forms import TovarForm, ZakazEditForm
 
 @login_required
 def tovar_edit(request, pk):
@@ -208,11 +207,20 @@ def zakaz_podrobno(request, order_id):
     order = get_object_or_404(Zakaz, ID=order_id)
     otgruzki = Otgruzka.objects.filter(ID_Zakaz=order)
     total_price = sum(item.cena * item.quantity for item in otgruzki)
+    if request.method == 'POST':
+        form = ZakazEditForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Изменения успешно сохранены.')
+            return redirect('zakaz_podrobno', order_id=order.ID)
+    else:
+        form = ZakazEditForm(instance=order)
 
     context = {
         'order': order,
         'otgruzki': otgruzki,
         'total_price': total_price,
+        'form': form,
     }
     return render(request, 'analytics/zakaz_podrobno.html', context)
 

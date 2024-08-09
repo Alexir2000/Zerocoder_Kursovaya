@@ -65,6 +65,7 @@ def custom_logout_view(request):
 
 @login_required
 def user_kabinet(request):
+    # Получение заказов пользователя
     user_orders = Zakaz.objects.filter(ID_User=request.user).order_by('-DataZakaza')
     orders_info = []
 
@@ -83,8 +84,19 @@ def user_kabinet(request):
             'total_price': total_price
         })
 
+    # Получение данных корзины (как в каталоге)
+    if request.user.is_authenticated:
+        cart_items = CartItem.objects.filter(user=request.user, is_registered=True)
+    else:
+        session_id = request.session.session_key
+        cart_items = CartItem.objects.filter(session_id=session_id, is_registered=False)
+
+    total_cart_price = sum(item.cena * item.quantity for item in cart_items)
+
     context = {
-        'orders_info': orders_info
+        'orders_info': orders_info,
+        'cart_items': cart_items,  # Добавление данных корзины в контекст
+        'total_price': total_cart_price  # Общая стоимость товаров в корзине
     }
     return render(request, 'main/user_kabinet.html', context)
 

@@ -1,7 +1,7 @@
 # analytics/forms.py
 
 from django import forms
-from main.models import Tovar
+from main.models import Tovar, Zakaz
 
 class TovarForm(forms.ModelForm):
     class Meta:
@@ -40,3 +40,16 @@ class TovarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(TovarForm, self).__init__(*args, **kwargs)
         self.fields['Img_url'].required = False  # Поле не обязательно к заполнению
+
+class ZakazEditForm(forms.ModelForm):
+    class Meta:
+        model = Zakaz
+        fields = ['Rashod']  # Оставляем только поле затрат для редактирования
+        labels = {
+            'Rashod': 'Затраты по заказу (руб.)',
+        }
+        widgets = {
+            'Rashod': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
+
+

@@ -1,27 +1,74 @@
-<!-- analytics/templates/analytics/zakaz_podrobno.html -->
+{# flowers_shop/analytics/templates/analytics/zakaz_podrobno.html #}
+
 {% extends 'main/base.html' %}
 
-{% block title %}Заказ №{{ order.ID }}{% endblock %}
+{% block title %}Информация и правка заказа №{{ order.ID }}{% endblock %}
 
 {% block content %}
-    <h2>Заказ №{{ order.ID }}</h2>
-    <p><strong>Имя пользователя:</strong> {{ order.ID_User.username }}</p>
-    <p><strong>Email:</strong> {{ order.ID_User.email }}</p>
-    <p><strong>Телефон:</strong> {{ order.ID_User.telefon }}</p>
-    <p><strong>Дата заказа:</strong> {{ order.DataZakaza|date:"d.m.Y H:i" }}</p>
-    <p><strong>Адрес доставки:</strong> {{ order.ID_adres.Gorod }}, {{ order.ID_adres.adres }}</p>
-    <p><strong>Примечание:</strong> {{ order.Primechanie }}</p>
+<div class="container mt-4">
+    <!-- Карточка с информацией о заказе и формой для редактирования -->
+    <div class="card mb-4" style="width: 90%; margin: auto;">
+        <div class="card-header">
+            <h2>Информация и правка заказа №{{ order.ID }}</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Имя пользователя:</strong> {{ order.ID_User.username }}</p>
+            <p><strong>Email:</strong> {{ order.ID_User.email }}</p>
+            <p><strong>Телефон:</strong> {{ order.ID_User.telefon }}</p>
+            <p><strong>Дата заказа:</strong> {{ order.DataZakaza|date:"d.m.Y H:i" }}</p>
+            <p><strong>Адрес доставки:</strong> {{ order.ID_adres.Gorod }}, {{ order.ID_adres.adres }}</p>
+            <!-- Вывод поля примечания -->
+            <div class="form-group">
+                <label><strong>Примечание:</strong></label>
+                <textarea class="form-control" rows="3" readonly>{{ order.Primechanie }}</textarea>
+            </div>
+            <!-- Поля только для просмотра -->
+            <p><strong>Собран:</strong> {{ order.Sobrano }} <strong>Дата сборки:</strong> {{ order.Data_sborki|date:"d.m.Y H:i" }}</p>
+            <p><strong>Передано в доставку:</strong> {{ order.Peredano_dostavka }} <strong>Дата передачи в доставку:</strong> {{ order.Data_peredano_v_dostavku|date:"d.m.Y H:i" }}</p>
+            <p><strong>Заказ доставлен:</strong> {{ order.Zakaz_dostavlen }} <strong>Дата доставки:</strong> {{ order.DataDostavki|date:"d.m.Y H:i" }}</p>
+            <p><strong>Заказ получен:</strong> {{ order.Zakaz_Poluchen }} <strong>Дата получения заказа:</strong> {{ order.Data_Zakaz_Poluchen|date:"d.m.Y H:i" }}</p>
+            <p><strong>Заказ закрыт:</strong> {{ order.Zakaz_zakryt }} <strong>Дата закрытия заказа:</strong> {{ order.Data_Zakaz_zakryt|date:"d.m.Y H:i" }}</p>
 
-    <h3>Содержимое заказа</h3>
-    <ul class="list-group mb-3">
-        {% for item in otgruzki %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ item.tovar_id.Nazvanie }} - {{ item.cena }} руб.
-                <span class="badge badge-primary badge-pill">{{ item.quantity }}</span>
-            </li>
-        {% endfor %}
-    </ul>
-    <p><strong>Общая сумма:</strong> {{ total_price }} руб.</p>
 
-    <a href="{% url 'manager_kabinet' %}" class="btn btn-secondary">Вернуться к списку заказов</a>
+
+            <!-- Форма для редактирования поля затрат -->
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    {{ form.Rashod.label_tag }}
+                    {{ form.Rashod }}
+                </div>
+
+                <!-- Галочка для поля Peredano_v_bot только для чтения -->
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" {% if order.Peredano_v_bot %}checked{% endif %} disabled>
+                    <label class="form-check-label">Передано в бот</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Карточка с содержимым заказа -->
+    <div class="card mb-4" style="width: 90%; margin: auto;">
+        <div class="card-header">
+            <h3>Содержимое заказа</h3>
+        </div>
+        <div class="card-body">
+            <ul class="list-group mb-3">
+                {% for item in otgruzki %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ item.tovar_id.Nazvanie }} - {{ item.cena }} руб.
+                        <span class="badge badge-primary badge-pill">{{ item.quantity }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+            <p><strong>Общая сумма:</strong> {{ total_price }} руб.</p>
+        </div>
+    </div>
+
+    <a href="{% url 'manager_kabinet' %}" class="btn btn-secondary mt-4">Вернуться к списку заказов</a>
+</div>
 {% endblock %}

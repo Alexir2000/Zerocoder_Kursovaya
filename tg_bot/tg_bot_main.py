@@ -22,7 +22,7 @@ dp = Dispatcher()
 logging.basicConfig(level=logging.INFO)
 
 button_get_zakaz = KeyboardButton(text="Получить заказ")
-button_get_zhurnal_status = KeyboardButton(text="Получить статус заказов")
+button_get_zhurnal_status = KeyboardButton(text="Получить журнал статусов")
 button_start_auto_requests = KeyboardButton(text="Запуск авто-запросов")
 button_stop_auto_requests = KeyboardButton(text="Остановка авто-запросов")
 button_get_analytics = KeyboardButton(text="Получить аналитику")
@@ -219,7 +219,7 @@ async def help_command(message: Message):
 async def get_zakaz_from_site(message: Message):
     await fetch_zakaz()
 
-@dp.message(F.text == "Получить журнал статуса")
+@dp.message(F.text == "Получить журнал статусов")
 async def get_zhurnal_status_from_site(message: Message):
     await fetch_zhurnal_status()
 
