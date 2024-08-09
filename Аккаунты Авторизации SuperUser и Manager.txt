@@ -1,0 +1,7 @@
+права superuser
+login Alex
+password 123
+
+Права Менеджер:
+Manager1
+123
