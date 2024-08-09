@@ -4,6 +4,10 @@
 {% block title %}Каталог товаров{% endblock %}
 
 {% block content %}
+    {% if request.user.StatusID_id == 3 %}
+        <a href="{% url 'tovar_create' %}" class="btn btn-success mb-4">Добавить товар</a>
+    {% endif %}
+
     <h2 class="mt-4">Каталог товаров</h2>
     <form method="get" class="form-inline mb-4">
         <div class="form-group mx-sm-3 mb-2">
@@ -37,7 +41,7 @@
                             <form method="post" action="{% url 'add_to_cart' tovar.ID %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="next" value="{% url 'catalog' %}">
-                                <div class="form-group row mb-1">  <!-- Уменьшен отступ здесь -->
+                                <div class="form-group row mb-1">
                                     <label for="quantity" class="col-auto col-form-label">Количество:</label>
                                     <div class="col-auto">
                                         <input type="number" name="quantity" class="form-control" value="1" min="1" style="width: 100%;">
@@ -46,6 +50,9 @@
                                 <button type="submit" class="btn btn-success save-scroll btn-sm mb-2">В корзину</button>
                                 <a href="{% url 'karta_tovara' tovar.ID %}" class="btn btn-primary btn-sm">Подробнее</a>
                             </form>
+                            {% if request.user.StatusID_id == 3 %}
+                                <a href="{% url 'tovar_edit' tovar.ID %}" class="btn btn-warning btn-sm mt-2">Редактировать</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

@@ -1,8 +1,7 @@
 # orders/forms.py
 
 from django import forms
-from django.contrib.auth import get_user_model  # Импортируйте get_user_model для получения пользовательской модели
-
+from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class OrderForm(forms.Form):

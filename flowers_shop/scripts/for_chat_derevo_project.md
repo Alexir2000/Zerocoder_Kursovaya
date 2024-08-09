@@ -7,6 +7,7 @@
 ├── analytics/
 │   ├── admin.py
 │   ├── apps.py
+│   ├── forms.py
 │   ├── media/
 │   │   ├── analytics/
 │   ├── models.py
@@ -20,6 +21,8 @@
 │   │   │   ├── analytics.html
 │   │   │   ├── clear_zhurnal.html
 │   │   │   ├── manager_kabinet.html
+│   │   │   ├── tovar_create.html
+│   │   │   ├── tovar_edit.html
 │   │   │   ├── zakaz_podrobno.html
 │   ├── tests.py
 │   ├── urls.py
@@ -40,6 +43,9 @@
 │   ├── templates/
 │   │   ├── catalog/
 │   │   │   ├── catalog.html
+│   │   │   ├── karta_tovara.html
+│   │   │   ├── otzyv_na_tovar.html
+│   │   │   ├── reviews_list.html
 │   ├── tests.py
 │   ├── urls.py
 │   ├── views.py

@@ -2,9 +2,7 @@
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from main.models import Zakaz, Adresa, Otgruzka
 from django.views.decorators.http import require_POST
-from django.utils.dateparse import parse_date
 from datetime import datetime, timedelta
 from django.views.decorators.cache import cache_control
 from django.utils import timezone
@@ -13,9 +11,48 @@ from main.models import Zhurnal_status_Zakaza
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from main.models import Otchet, Zakaz, Otgruzka
-from django.db.models import Sum, F
 from decimal import Decimal
 from django.http import JsonResponse
+from django.http import HttpResponseForbidden
+from main.models import Tovar
+from .forms import TovarForm
+
+
+@login_required
+def tovar_edit(request, pk):
+    if request.user.StatusID_id != 3:  # Проверка на статус менеджера
+        return HttpResponseForbidden()
+
+    tovar = get_object_or_404(Tovar, pk=pk)
+
+    if request.method == 'POST':
+        form = TovarForm(request.POST, instance=tovar)
+        if form.is_valid():
+            form.save()
+            return redirect('tovar_edit', pk=tovar.pk)  # Перенаправление на ту же страницу после сохранения
+    else:
+        form = TovarForm(instance=tovar)
+
+    return render(request, 'analytics/tovar_edit.html', {'form': form, 'tovar': tovar})
+
+
+@login_required
+def tovar_create(request):
+    if request.user.StatusID_id != 3:  # Проверка на статус менеджера
+        return HttpResponseForbidden()
+
+    if request.method == 'POST':
+        form = TovarForm(request.POST)
+        if form.is_valid():
+            form.save()  # Сохранение формы
+            return redirect('catalog')  # Перенаправление в каталог после создания товара
+        else:
+            print(form.errors)  # Вывод ошибок формы в консоль для отладки
+    else:
+        form = TovarForm()
+
+    return render(request, 'analytics/tovar_create.html', {'form': form})
+
 
 
 
