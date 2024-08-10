@@ -57,7 +57,7 @@ source venv/bin/activate  # для Windows: venv\Scripts\activate
 ## Настройка
 
 **Вводное видео к проекту**:
-   - Посмотрите вводное видео к проекту по [этой ссылке в облаке](https://disk.yandex.ru/i/WX1BU_YSO7dP-g).
+   - Посмотрите вводное видео к проекту по [этой ссылке в облаке](https://disk.yandex.ru/i/WYP0YNn6Iv0UCw).
 
 для доступа на сайт в качестве superuser введите 
 
